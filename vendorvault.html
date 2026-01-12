@@ -1,0 +1,2198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VendorVault - Vendor & Contractor Management</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #1e293b;
+      --bg-input: #334155;
+      --border: #334155;
+      --border-light: #475569;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #f97316;
+      --accent-hover: #ea580c;
+      --success: #22c55e;
+      --success-bg: rgba(34, 197, 94, 0.15);
+      --warning: #eab308;
+      --warning-bg: rgba(234, 179, 8, 0.15);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.15);
+      --info: #3b82f6;
+      --info-bg: rgba(59, 130, 246, 0.15);
+    }
+    body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; }
+    
+    /* Header */
+    .header { background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .logo { display: flex; align-items: center; gap: 0.75rem; }
+    .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent), #dc2626); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+    .logo-text { font-size: 1.5rem; font-weight: 700; }
+    .logo-version { font-size: 0.75rem; color: var(--text-muted); }
+    .header-actions { display: flex; gap: 0.5rem; }
+    
+    /* Navigation */
+    .nav-tabs { display: flex; background: var(--bg-secondary); border-bottom: 1px solid var(--border); padding: 0 1rem; overflow-x: auto; }
+    .nav-tab { padding: 1rem 1.25rem; cursor: pointer; color: var(--text-secondary); border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; }
+    .nav-tab:hover { color: var(--text-primary); }
+    .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    
+    /* Main Content */
+    .main-content { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    
+    /* Cards */
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1.5rem; }
+    .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+    .card-title { font-size: 1.1rem; font-weight: 600; }
+    .card-body { padding: 1.25rem; }
+    
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+    .stat-value { font-size: 2rem; font-weight: 700; }
+    .stat-value.green { color: var(--success); }
+    .stat-value.yellow { color: var(--warning); }
+    .stat-value.red { color: var(--danger); }
+    .stat-label { color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem; }
+    
+    /* Buttons */
+    .btn { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--bg-input); color: var(--text-primary); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-success { background: var(--success); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-sm { padding: 0.375rem 0.75rem; font-size: 0.8rem; }
+    
+    /* Forms */
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary); }
+    .form-input, .form-select, .form-textarea { width: 100%; padding: 0.625rem 0.875rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 0.875rem; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--accent); }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .form-row-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .form-row-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .form-check { display: flex; align-items: center; gap: 0.5rem; }
+    .form-check input { width: 18px; height: 18px; accent-color: var(--accent); }
+    
+    /* Tables */
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.875rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th { font-weight: 600; color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    tr:hover { background: rgba(255,255,255,0.02); }
+    
+    /* Badges */
+    .badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+    .badge-success { background: var(--success-bg); color: var(--success); }
+    .badge-warning { background: var(--warning-bg); color: var(--warning); }
+    .badge-danger { background: var(--danger-bg); color: var(--danger); }
+    .badge-info { background: var(--info-bg); color: var(--info); }
+    .badge-neutral { background: var(--bg-input); color: var(--text-secondary); }
+    
+    /* Compliance Status */
+    .compliance-status { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; }
+    .compliance-cleared { background: var(--success-bg); color: var(--success); border: 1px solid var(--success); }
+    .compliance-not-cleared { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); }
+    .compliance-pending { background: var(--warning-bg); color: var(--warning); border: 1px solid var(--warning); }
+    
+    /* Checklist */
+    .checklist { display: flex; flex-direction: column; gap: 0.5rem; }
+    .checklist-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; background: var(--bg-input); border-radius: 6px; }
+    .checklist-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; }
+    .checklist-icon.valid { color: var(--success); }
+    .checklist-icon.invalid { color: var(--danger); }
+    .checklist-icon.warning { color: var(--warning); }
+    .checklist-text { flex: 1; font-size: 0.875rem; }
+    .checklist-date { font-size: 0.75rem; color: var(--text-muted); }
+    
+    /* Insurance Section */
+    .insurance-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+    .insurance-card { background: var(--bg-input); border-radius: 8px; padding: 1rem; }
+    .insurance-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .insurance-type { font-weight: 600; font-size: 0.9rem; }
+    .insurance-detail { display: flex; justify-content: space-between; font-size: 0.8rem; padding: 0.375rem 0; border-bottom: 1px solid var(--border); }
+    .insurance-detail:last-child { border-bottom: none; }
+    .insurance-label { color: var(--text-muted); }
+    
+    /* Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: var(--bg-secondary); border-radius: 16px; width: 100%; max-width: 800px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+    .modal-lg { max-width: 900px; }
+    .modal-header { padding: 1.25rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 1.25rem; font-weight: 600; }
+    .modal-close { background: none; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; padding: 0.25rem; }
+    .modal-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+    .modal-footer { padding: 1rem 1.25rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.75rem; }
+    
+    /* Section Headers */
+    .section-header { font-size: 0.9rem; font-weight: 600; color: var(--accent); margin: 1.5rem 0 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    .section-header:first-child { margin-top: 0; }
+    
+    /* Filters */
+    .filters { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .filter-input { padding: 0.5rem 0.875rem; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); font-size: 0.875rem; min-width: 180px; }
+    
+    /* Empty State */
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    
+    /* Toast */
+    .toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 2000; display: flex; flex-direction: column; gap: 0.5rem; }
+    .toast { padding: 1rem 1.25rem; border-radius: 8px; color: white; font-weight: 500; animation: slideIn 0.3s ease; }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+    .toast.warning { background: var(--warning); }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    
+    /* Vendor Row Status */
+    .vendor-row-cleared { border-left: 3px solid var(--success); }
+    .vendor-row-not-cleared { border-left: 3px solid var(--danger); }
+    .vendor-row-pending { border-left: 3px solid var(--warning); }
+    
+    /* Quick Actions */
+    .quick-actions { display: flex; gap: 0.5rem; }
+    
+    /* Alert Banner */
+    .alert-banner { padding: 1rem 1.25rem; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
+    .alert-danger { background: var(--danger-bg); border: 1px solid var(--danger); color: var(--danger); }
+    .alert-warning { background: var(--warning-bg); border: 1px solid var(--warning); color: var(--warning); }
+    
+    /* Vendor Detail Sections */
+    .detail-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+    .detail-section { background: var(--bg-input); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+    .detail-section-title { font-size: 0.875rem; font-weight: 600; color: var(--accent); margin-bottom: 0.75rem; }
+    
+    @media (max-width: 768px) {
+      .form-row, .form-row-3, .form-row-4 { grid-template-columns: 1fr; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .insurance-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">🏗️</div>
+      <div>
+        <div class="logo-text">VendorVault</div>
+        <div class="logo-version">v2.0.0</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" onclick="exportData()">📤 Export</button>
+      <button class="btn btn-secondary" onclick="importData()">📥 Import</button>
+      <button class="btn btn-secondary" onclick="openSettings()">⚙️ Settings</button>
+    </div>
+  </header>
+  
+  <nav class="nav-tabs">
+    <div class="nav-tab active" data-tab="dashboard">Dashboard</div>
+    <div class="nav-tab" data-tab="vendors">Vendors</div>
+    <div class="nav-tab" data-tab="compliance">Compliance</div>
+    <div class="nav-tab" data-tab="documents">Documents</div>
+    <div class="nav-tab" data-tab="contracts">Contracts</div>
+    <div class="nav-tab" data-tab="reports">Reports</div>
+  </nav>
+  
+  <main class="main-content">
+    <!-- Dashboard Tab -->
+    <div class="tab-content active" id="tab-dashboard">
+      <div id="dashboard-alerts"></div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Total Vendors</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value green" id="stat-cleared">0</div>
+          <div class="stat-label">Cleared to Work</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value red" id="stat-not-cleared">0</div>
+          <div class="stat-label">Not Cleared</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value yellow" id="stat-expiring">0</div>
+          <div class="stat-label">Expiring Soon</div>
+        </div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🚨 Requires Attention</h2>
+          </div>
+          <div class="card-body" id="attention-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">⏰ Expiring in 30 Days</h2>
+          </div>
+          <div class="card-body" id="expiring-list"></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">✅ Recently Cleared Vendors</h2>
+        </div>
+        <div class="card-body" id="cleared-list"></div>
+      </div>
+    </div>
+    
+    <!-- Vendors Tab -->
+    <div class="tab-content" id="tab-vendors">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Vendors</h2>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-primary" onclick="openVendorModal()">+ Add Vendor</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="filters">
+            <input type="text" class="filter-input" id="vendor-search" placeholder="Search vendors..." oninput="renderVendors()">
+            <select class="filter-input" id="vendor-filter-category" onchange="renderVendors()">
+              <option value="">All Categories</option>
+            </select>
+            <select class="filter-input" id="vendor-filter-status" onchange="renderVendors()">
+              <option value="">All Status</option>
+              <option value="cleared">Cleared</option>
+              <option value="not-cleared">Not Cleared</option>
+              <option value="pending">Pending Review</option>
+            </select>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Vendor</th>
+                  <th>Category</th>
+                  <th>Contact</th>
+                  <th>Compliance</th>
+                  <th>GL Expires</th>
+                  <th>WC Expires</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="vendors-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Compliance Tab -->
+    <div class="tab-content" id="tab-compliance">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Compliance Overview</h2>
+          <button class="btn btn-secondary" onclick="exportComplianceReport()">📊 Export Report</button>
+        </div>
+        <div class="card-body">
+          <div class="filters">
+            <select class="filter-input" id="compliance-filter" onchange="renderCompliance()">
+              <option value="">All Vendors</option>
+              <option value="cleared">Cleared Only</option>
+              <option value="not-cleared">Not Cleared Only</option>
+              <option value="expiring">Expiring Soon</option>
+            </select>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Vendor</th>
+                  <th>Status</th>
+                  <th>W-9</th>
+                  <th>Contract</th>
+                  <th>GL Insurance</th>
+                  <th>Workers Comp</th>
+                  <th>License</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="compliance-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Documents Tab -->
+    <div class="tab-content" id="tab-documents">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Documents</h2>
+          <button class="btn btn-primary" onclick="openDocumentModal()">+ Add Document</button>
+        </div>
+        <div class="card-body">
+          <div class="filters">
+            <input type="text" class="filter-input" id="doc-search" placeholder="Search documents..." oninput="renderDocuments()">
+            <select class="filter-input" id="doc-filter-vendor" onchange="renderDocuments()">
+              <option value="">All Vendors</option>
+            </select>
+            <select class="filter-input" id="doc-filter-type" onchange="renderDocuments()">
+              <option value="">All Types</option>
+              <option value="gl_coi">GL Certificate</option>
+              <option value="wc_coi">WC Certificate</option>
+              <option value="auto_coi">Auto Insurance</option>
+              <option value="umbrella_coi">Umbrella Policy</option>
+              <option value="w9">W-9</option>
+              <option value="contract">Contract</option>
+              <option value="license">License/Certification</option>
+              <option value="background">Background Check</option>
+              <option value="safety_cert">Safety Certificate</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Document</th>
+                  <th>Vendor</th>
+                  <th>Type</th>
+                  <th>Uploaded</th>
+                  <th>Expires</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="documents-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Contracts Tab -->
+    <div class="tab-content" id="tab-contracts">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Contracts</h2>
+          <button class="btn btn-primary" onclick="openContractModal()">+ Add Contract</button>
+        </div>
+        <div class="card-body">
+          <div class="filters">
+            <input type="text" class="filter-input" id="contract-search" placeholder="Search contracts..." oninput="renderContracts()">
+            <select class="filter-input" id="contract-filter-vendor" onchange="renderContracts()">
+              <option value="">All Vendors</option>
+            </select>
+            <select class="filter-input" id="contract-filter-status" onchange="renderContracts()">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="expiring">Expiring Soon</option>
+              <option value="expired">Expired</option>
+            </select>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Contract</th>
+                  <th>Vendor</th>
+                  <th>Value</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="contracts-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Reports Tab -->
+    <div class="tab-content" id="tab-reports">
+      <div class="stats-grid">
+        <div class="card" style="cursor: pointer;" onclick="generateReport('vendors')">
+          <div class="card-body" style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📋</div>
+            <div style="font-weight: 600;">Vendor List</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">All vendors with contact info</div>
+          </div>
+        </div>
+        <div class="card" style="cursor: pointer;" onclick="generateReport('compliance')">
+          <div class="card-body" style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+            <div style="font-weight: 600;">Compliance Report</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Insurance & document status</div>
+          </div>
+        </div>
+        <div class="card" style="cursor: pointer;" onclick="generateReport('expiring')">
+          <div class="card-body" style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">⏰</div>
+            <div style="font-weight: 600;">Expiring Items</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Insurance, licenses, contracts</div>
+          </div>
+        </div>
+        <div class="card" style="cursor: pointer;" onclick="generateReport('insurance')">
+          <div class="card-body" style="text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">🛡️</div>
+            <div style="font-weight: 600;">Insurance Summary</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">COI details and limits</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <!-- Vendor Modal -->
+  <div class="modal-overlay" id="vendor-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="vendor-modal-title">Add Vendor</h3>
+        <button class="modal-close" onclick="closeModal('vendor-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="v-id">
+        
+        <div class="section-header">Company Information</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Company Name *</label>
+            <input type="text" class="form-input" id="v-name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category *</label>
+            <select class="form-select" id="v-category">
+              <option value="general">General Contractor</option>
+              <option value="plumbing">Plumbing</option>
+              <option value="electrical">Electrical</option>
+              <option value="hvac">HVAC</option>
+              <option value="landscaping">Landscaping</option>
+              <option value="cleaning">Cleaning/Janitorial</option>
+              <option value="security">Security</option>
+              <option value="roofing">Roofing</option>
+              <option value="painting">Painting</option>
+              <option value="flooring">Flooring</option>
+              <option value="pest">Pest Control</option>
+              <option value="supplies">Supplies/Materials</option>
+              <option value="technology">Technology/IT</option>
+              <option value="consulting">Consulting</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tax ID / EIN</label>
+            <input type="text" class="form-input" id="v-taxid" placeholder="XX-XXXXXXX">
+          </div>
+        </div>
+        
+        <div class="section-header">Contact Information</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Contact Name</label>
+            <input type="text" class="form-input" id="v-contact">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="v-email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" class="form-input" id="v-phone">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <input type="text" class="form-input" id="v-address">
+        </div>
+        
+        <div class="section-header">General Liability Insurance</div>
+        <div class="form-row-4">
+          <div class="form-group">
+            <label class="form-label">Carrier</label>
+            <input type="text" class="form-input" id="v-gl-carrier">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Policy Number</label>
+            <input type="text" class="form-input" id="v-gl-policy">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Coverage Limit</label>
+            <select class="form-select" id="v-gl-limit">
+              <option value="">Select...</option>
+              <option value="500000">$500,000</option>
+              <option value="1000000">$1,000,000</option>
+              <option value="2000000">$2,000,000</option>
+              <option value="5000000">$5,000,000</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Expiration Date</label>
+            <input type="date" class="form-input" id="v-gl-exp">
+          </div>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" id="v-gl-additional">
+          <label for="v-gl-additional">Listed as Additional Insured</label>
+        </div>
+        
+        <div class="section-header">Workers Compensation</div>
+        <div class="form-row-4">
+          <div class="form-group">
+            <label class="form-label">Carrier</label>
+            <input type="text" class="form-input" id="v-wc-carrier">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Policy Number</label>
+            <input type="text" class="form-input" id="v-wc-policy">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Coverage Limit</label>
+            <select class="form-select" id="v-wc-limit">
+              <option value="">Select...</option>
+              <option value="500000">$500,000</option>
+              <option value="1000000">$1,000,000</option>
+              <option value="2000000">$2,000,000</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Expiration Date</label>
+            <input type="date" class="form-input" id="v-wc-exp">
+          </div>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" id="v-wc-exempt">
+          <label for="v-wc-exempt">WC Exempt (sole proprietor, no employees)</label>
+        </div>
+        
+        <div class="section-header">Auto Insurance (if applicable)</div>
+        <div class="form-row-4">
+          <div class="form-group">
+            <label class="form-label">Carrier</label>
+            <input type="text" class="form-input" id="v-auto-carrier">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Policy Number</label>
+            <input type="text" class="form-input" id="v-auto-policy">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Coverage Limit</label>
+            <select class="form-select" id="v-auto-limit">
+              <option value="">Select...</option>
+              <option value="500000">$500,000</option>
+              <option value="1000000">$1,000,000</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Expiration Date</label>
+            <input type="date" class="form-input" id="v-auto-exp">
+          </div>
+        </div>
+        
+        <div class="section-header">Certifications & Licenses</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Trade License #</label>
+            <input type="text" class="form-input" id="v-license-num">
+          </div>
+          <div class="form-group">
+            <label class="form-label">License Type</label>
+            <input type="text" class="form-input" id="v-license-type" placeholder="e.g., Master Electrician">
+          </div>
+          <div class="form-group">
+            <label class="form-label">License Expiration</label>
+            <input type="date" class="form-input" id="v-license-exp">
+          </div>
+        </div>
+        
+        <div class="section-header">Compliance Documents</div>
+        <div class="form-row">
+          <div class="form-group">
+            <div class="form-check">
+              <input type="checkbox" id="v-w9">
+              <label for="v-w9">W-9 on File</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="form-check">
+              <input type="checkbox" id="v-contract">
+              <label for="v-contract">Signed Contract on File</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="form-check">
+              <input type="checkbox" id="v-background">
+              <label for="v-background">Background Check Cleared</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="section-header">Notes</div>
+        <div class="form-group">
+          <textarea class="form-textarea" id="v-notes" placeholder="Additional notes about this vendor..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="v-delete-btn" onclick="deleteVendor()" style="margin-right: auto; display: none;">Delete</button>
+        <button class="btn btn-secondary" onclick="closeModal('vendor-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveVendor()">Save Vendor</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Document Modal -->
+  <div class="modal-overlay" id="document-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="doc-modal-title">Add Document</h3>
+        <button class="modal-close" onclick="closeModal('document-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="d-id">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Vendor *</label>
+            <select class="form-select" id="d-vendor"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Document Type *</label>
+            <select class="form-select" id="d-type">
+              <option value="gl_coi">GL Certificate of Insurance</option>
+              <option value="wc_coi">Workers Comp Certificate</option>
+              <option value="auto_coi">Auto Insurance Certificate</option>
+              <option value="umbrella_coi">Umbrella Policy</option>
+              <option value="w9">W-9 Form</option>
+              <option value="contract">Contract/Agreement</option>
+              <option value="license">Trade License</option>
+              <option value="background">Background Check</option>
+              <option value="safety_cert">Safety Certificate (OSHA, etc.)</option>
+              <option value="drug_test">Drug Test Results</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Document Name *</label>
+          <input type="text" class="form-input" id="d-name" placeholder="e.g., 2024 GL Certificate">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Upload Date</label>
+            <input type="date" class="form-input" id="d-uploaded">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Expiration Date</label>
+            <input type="date" class="form-input" id="d-expires">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-textarea" id="d-notes" placeholder="Policy limits, special terms, etc."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="d-delete-btn" onclick="deleteDocument()" style="margin-right: auto; display: none;">Delete</button>
+        <button class="btn btn-secondary" onclick="closeModal('document-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveDocument()">Save Document</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Contract Modal -->
+  <div class="modal-overlay" id="contract-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="contract-modal-title">Add Contract</h3>
+        <button class="modal-close" onclick="closeModal('contract-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="c-id">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Vendor *</label>
+            <select class="form-select" id="c-vendor"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contract Name *</label>
+            <input type="text" class="form-input" id="c-name" placeholder="e.g., Annual Maintenance Agreement">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Contract Value</label>
+            <input type="number" class="form-input" id="c-value" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Start Date</label>
+            <input type="date" class="form-input" id="c-start">
+          </div>
+          <div class="form-group">
+            <label class="form-label">End Date</label>
+            <input type="date" class="form-input" id="c-end">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Terms & Notes</label>
+          <textarea class="form-textarea" id="c-notes" placeholder="Contract terms, renewal conditions, etc."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="c-delete-btn" onclick="deleteContract()" style="margin-right: auto; display: none;">Delete</button>
+        <button class="btn btn-secondary" onclick="closeModal('contract-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveContract()">Save Contract</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Vendor Detail Modal -->
+  <div class="modal-overlay" id="vendor-detail-modal">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3 class="modal-title" id="vendor-detail-title">Vendor Details</h3>
+        <button class="modal-close" onclick="closeModal('vendor-detail-modal')">&times;</button>
+      </div>
+      <div class="modal-body" id="vendor-detail-content"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('vendor-detail-modal')">Close</button>
+        <button class="btn btn-primary" id="vendor-detail-edit-btn">Edit Vendor</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Settings</h3>
+        <button class="modal-close" onclick="closeModal('settings-modal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="section-header">Compliance Requirements</div>
+        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Set minimum requirements for vendors to be considered "Cleared to Work"
+        </p>
+        <div class="form-group">
+          <div class="form-check">
+            <input type="checkbox" id="req-w9" checked>
+            <label for="req-w9">Require W-9 on file</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-check">
+            <input type="checkbox" id="req-contract" checked>
+            <label for="req-contract">Require signed contract</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-check">
+            <input type="checkbox" id="req-gl" checked>
+            <label for="req-gl">Require General Liability insurance</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-check">
+            <input type="checkbox" id="req-wc">
+            <label for="req-wc">Require Workers Compensation (unless exempt)</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="form-check">
+            <input type="checkbox" id="req-license">
+            <label for="req-license">Require trade license (for licensed trades)</label>
+          </div>
+        </div>
+        
+        <div class="section-header">Minimum Coverage Amounts</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Minimum GL Coverage</label>
+            <select class="form-select" id="min-gl">
+              <option value="0">No minimum</option>
+              <option value="500000">$500,000</option>
+              <option value="1000000" selected>$1,000,000</option>
+              <option value="2000000">$2,000,000</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Minimum WC Coverage</label>
+            <select class="form-select" id="min-wc">
+              <option value="0">No minimum</option>
+              <option value="500000" selected>$500,000</option>
+              <option value="1000000">$1,000,000</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="section-header">Alert Settings</div>
+        <div class="form-group">
+          <label class="form-label">Days before expiration to show warning</label>
+          <select class="form-select" id="alert-days">
+            <option value="14">14 days</option>
+            <option value="30" selected>30 days</option>
+            <option value="45">45 days</option>
+            <option value="60">60 days</option>
+            <option value="90">90 days</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('settings-modal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="toast-container" id="toast-container"></div>
+  
+  <script>
+    // Data storage
+    let vendors = [];
+    let documents = [];
+    let contracts = [];
+    let settings = {
+      reqW9: true,
+      reqContract: true,
+      reqGL: true,
+      reqWC: false,
+      reqLicense: false,
+      minGL: 1000000,
+      minWC: 500000,
+      alertDays: 30
+    };
+    
+    const categoryLabels = {
+      general: 'General Contractor',
+      plumbing: 'Plumbing',
+      electrical: 'Electrical',
+      hvac: 'HVAC',
+      landscaping: 'Landscaping',
+      cleaning: 'Cleaning/Janitorial',
+      security: 'Security',
+      roofing: 'Roofing',
+      painting: 'Painting',
+      flooring: 'Flooring',
+      pest: 'Pest Control',
+      supplies: 'Supplies/Materials',
+      technology: 'Technology/IT',
+      consulting: 'Consulting',
+      other: 'Other'
+    };
+    
+    const docTypeLabels = {
+      gl_coi: 'GL Certificate',
+      wc_coi: 'WC Certificate',
+      auto_coi: 'Auto Insurance',
+      umbrella_coi: 'Umbrella Policy',
+      w9: 'W-9 Form',
+      contract: 'Contract',
+      license: 'Trade License',
+      background: 'Background Check',
+      safety_cert: 'Safety Certificate',
+      drug_test: 'Drug Test',
+      other: 'Other'
+    };
+    
+    const licensedTrades = ['plumbing', 'electrical', 'hvac', 'roofing', 'general'];
+    
+    // Initialize
+    function init() {
+      loadData();
+      setupTabs();
+      renderAll();
+    }
+    
+    function loadData() {
+      const saved = localStorage.getItem('vendorvault_data');
+      if (saved) {
+        const data = JSON.parse(saved);
+        vendors = data.vendors || [];
+        documents = data.documents || [];
+        contracts = data.contracts || [];
+        settings = { ...settings, ...data.settings };
+      } else {
+        loadDemoData();
+      }
+    }
+    
+    function loadDemoData() {
+      const today = new Date();
+      const addDays = (d, n) => new Date(d.getTime() + n * 86400000).toISOString().split('T')[0];
+      const subDays = (d, n) => new Date(d.getTime() - n * 86400000).toISOString().split('T')[0];
+      
+      vendors = [
+        {
+          id: 1,
+          name: 'ABC Plumbing Services',
+          category: 'plumbing',
+          taxId: '12-3456789',
+          contact: 'John Smith',
+          email: 'john@abcplumbing.com',
+          phone: '(555) 123-4567',
+          address: '123 Main St, Anytown, ST 12345',
+          glCarrier: 'State Farm',
+          glPolicy: 'GL-12345678',
+          glLimit: 1000000,
+          glExp: addDays(today, 45),
+          glAdditional: true,
+          wcCarrier: 'Hartford',
+          wcPolicy: 'WC-87654321',
+          wcLimit: 500000,
+          wcExp: addDays(today, 60),
+          wcExempt: false,
+          autoCarrier: '',
+          autoPolicy: '',
+          autoLimit: '',
+          autoExp: '',
+          licenseNum: 'PL-2024-1234',
+          licenseType: 'Master Plumber',
+          licenseExp: addDays(today, 180),
+          hasW9: true,
+          hasContract: true,
+          hasBackground: false,
+          notes: 'Reliable vendor, good response time'
+        },
+        {
+          id: 2,
+          name: 'Quick Electric Co',
+          category: 'electrical',
+          taxId: '98-7654321',
+          contact: 'Sarah Johnson',
+          email: 'sarah@quickelectric.com',
+          phone: '(555) 987-6543',
+          address: '456 Oak Ave, Somewhere, ST 67890',
+          glCarrier: 'Liberty Mutual',
+          glPolicy: 'GL-99887766',
+          glLimit: 2000000,
+          glExp: addDays(today, 15),
+          glAdditional: true,
+          wcCarrier: 'Travelers',
+          wcPolicy: 'WC-11223344',
+          wcLimit: 1000000,
+          wcExp: addDays(today, 90),
+          wcExempt: false,
+          autoCarrier: 'Progressive',
+          autoPolicy: 'AU-55667788',
+          autoLimit: 500000,
+          autoExp: addDays(today, 120),
+          licenseNum: 'EL-2024-5678',
+          licenseType: 'Master Electrician',
+          licenseExp: addDays(today, 365),
+          hasW9: true,
+          hasContract: true,
+          hasBackground: true,
+          notes: ''
+        },
+        {
+          id: 3,
+          name: 'Green Thumb Landscaping',
+          category: 'landscaping',
+          taxId: '55-1234567',
+          contact: 'Mike Green',
+          email: 'mike@greenthumb.com',
+          phone: '(555) 456-7890',
+          address: '789 Garden Rd, Nature, ST 11111',
+          glCarrier: 'Nationwide',
+          glPolicy: 'GL-44556677',
+          glLimit: 1000000,
+          glExp: subDays(today, 10),
+          glAdditional: false,
+          wcCarrier: '',
+          wcPolicy: '',
+          wcLimit: '',
+          wcExp: '',
+          wcExempt: true,
+          autoCarrier: '',
+          autoPolicy: '',
+          autoLimit: '',
+          autoExp: '',
+          licenseNum: '',
+          licenseType: '',
+          licenseExp: '',
+          hasW9: true,
+          hasContract: false,
+          hasBackground: false,
+          notes: 'Seasonal contractor, March-October'
+        },
+        {
+          id: 4,
+          name: 'Office Supply Pro',
+          category: 'supplies',
+          taxId: '33-9876543',
+          contact: 'Lisa Brown',
+          email: 'orders@officesupplypro.com',
+          phone: '(555) 222-3333',
+          address: '100 Commerce Blvd, Business, ST 22222',
+          glCarrier: '',
+          glPolicy: '',
+          glLimit: '',
+          glExp: '',
+          glAdditional: false,
+          wcCarrier: '',
+          wcPolicy: '',
+          wcLimit: '',
+          wcExp: '',
+          wcExempt: true,
+          autoCarrier: '',
+          autoPolicy: '',
+          autoLimit: '',
+          autoExp: '',
+          licenseNum: '',
+          licenseType: '',
+          licenseExp: '',
+          hasW9: true,
+          hasContract: true,
+          hasBackground: false,
+          notes: 'Preferred office supply vendor'
+        }
+      ];
+      
+      documents = [
+        { id: 1, vendorId: 1, name: '2024 GL Certificate', type: 'gl_coi', uploaded: subDays(today, 30), expires: addDays(today, 45), notes: '$1M coverage' },
+        { id: 2, vendorId: 1, name: 'W-9 Form', type: 'w9', uploaded: subDays(today, 365), expires: '', notes: '' },
+        { id: 3, vendorId: 2, name: '2024 GL Certificate', type: 'gl_coi', uploaded: subDays(today, 350), expires: addDays(today, 15), notes: '$2M coverage - EXPIRING SOON' },
+        { id: 4, vendorId: 2, name: 'Master Electrician License', type: 'license', uploaded: subDays(today, 60), expires: addDays(today, 365), notes: 'State License #EL-2024-5678' }
+      ];
+      
+      contracts = [
+        { id: 1, vendorId: 1, name: 'Annual Maintenance Agreement', value: 24000, start: subDays(today, 180), end: addDays(today, 185), notes: 'Monthly service visits' },
+        { id: 2, vendorId: 2, name: 'Electrical Services MSA', value: 50000, start: subDays(today, 365), end: addDays(today, 30), notes: 'Annual not-to-exceed' }
+      ];
+      
+      saveData();
+    }
+    
+    function saveData() {
+      localStorage.setItem('vendorvault_data', JSON.stringify({
+        vendors,
+        documents,
+        contracts,
+        settings
+      }));
+    }
+    
+    function setupTabs() {
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+        });
+      });
+    }
+    
+    function renderAll() {
+      renderDashboard();
+      renderVendors();
+      renderCompliance();
+      renderDocuments();
+      renderContracts();
+      updateSelects();
+    }
+    
+    function updateSelects() {
+      const vendorOpts = '<option value="">Select Vendor</option>' + 
+        vendors.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
+      
+      document.getElementById('d-vendor').innerHTML = vendorOpts;
+      document.getElementById('c-vendor').innerHTML = vendorOpts;
+      document.getElementById('doc-filter-vendor').innerHTML = '<option value="">All Vendors</option>' + 
+        vendors.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
+      document.getElementById('contract-filter-vendor').innerHTML = '<option value="">All Vendors</option>' + 
+        vendors.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
+      
+      const catOpts = '<option value="">All Categories</option>' + 
+        Object.entries(categoryLabels).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+      document.getElementById('vendor-filter-category').innerHTML = catOpts;
+    }
+    
+    // Compliance calculation
+    function getVendorCompliance(vendor) {
+      const today = new Date();
+      const issues = [];
+      const warnings = [];
+      
+      // Check W-9
+      if (settings.reqW9 && !vendor.hasW9) {
+        issues.push('W-9 not on file');
+      }
+      
+      // Check Contract
+      if (settings.reqContract && !vendor.hasContract) {
+        issues.push('No signed contract');
+      }
+      
+      // Check GL Insurance
+      if (settings.reqGL) {
+        if (!vendor.glExp) {
+          issues.push('GL insurance not on file');
+        } else {
+          const glDate = new Date(vendor.glExp);
+          if (glDate < today) {
+            issues.push('GL insurance expired');
+          } else if ((glDate - today) / 86400000 <= settings.alertDays) {
+            warnings.push('GL insurance expiring soon');
+          }
+          if (settings.minGL > 0 && vendor.glLimit && vendor.glLimit < settings.minGL) {
+            issues.push(`GL coverage below minimum ($${(settings.minGL/1000000).toFixed(1)}M required)`);
+          }
+        }
+      }
+      
+      // Check Workers Comp
+      if (settings.reqWC && !vendor.wcExempt) {
+        if (!vendor.wcExp) {
+          issues.push('Workers Comp not on file');
+        } else {
+          const wcDate = new Date(vendor.wcExp);
+          if (wcDate < today) {
+            issues.push('Workers Comp expired');
+          } else if ((wcDate - today) / 86400000 <= settings.alertDays) {
+            warnings.push('Workers Comp expiring soon');
+          }
+        }
+      }
+      
+      // Check License (for licensed trades)
+      if (settings.reqLicense && licensedTrades.includes(vendor.category)) {
+        if (!vendor.licenseExp) {
+          issues.push('Trade license not on file');
+        } else {
+          const licDate = new Date(vendor.licenseExp);
+          if (licDate < today) {
+            issues.push('Trade license expired');
+          } else if ((licDate - today) / 86400000 <= settings.alertDays) {
+            warnings.push('Trade license expiring soon');
+          }
+        }
+      }
+      
+      return {
+        status: issues.length > 0 ? 'not-cleared' : (warnings.length > 0 ? 'pending' : 'cleared'),
+        issues,
+        warnings
+      };
+    }
+    
+    function getExpirationStatus(dateStr) {
+      if (!dateStr) return { status: 'missing', label: 'Not on file', class: 'badge-neutral' };
+      const today = new Date();
+      const expDate = new Date(dateStr);
+      const daysUntil = Math.ceil((expDate - today) / 86400000);
+      
+      if (daysUntil < 0) return { status: 'expired', label: 'Expired', class: 'badge-danger' };
+      if (daysUntil <= settings.alertDays) return { status: 'expiring', label: `${daysUntil}d`, class: 'badge-warning' };
+      return { status: 'valid', label: formatDate(dateStr), class: 'badge-success' };
+    }
+    
+    // Dashboard
+    function renderDashboard() {
+      let cleared = 0, notCleared = 0, expiringSoon = 0;
+      const attentionItems = [];
+      const expiringItems = [];
+      const clearedItems = [];
+      
+      vendors.forEach(v => {
+        const comp = getVendorCompliance(v);
+        if (comp.status === 'cleared') {
+          cleared++;
+          clearedItems.push(v);
+        } else if (comp.status === 'not-cleared') {
+          notCleared++;
+          attentionItems.push({ vendor: v, issues: comp.issues });
+        } else {
+          expiringSoon++;
+        }
+        
+        // Check all expiration dates
+        [
+          { date: v.glExp, label: 'GL Insurance' },
+          { date: v.wcExp, label: 'Workers Comp' },
+          { date: v.autoExp, label: 'Auto Insurance' },
+          { date: v.licenseExp, label: 'Trade License' }
+        ].forEach(item => {
+          if (item.date) {
+            const status = getExpirationStatus(item.date);
+            if (status.status === 'expiring') {
+              expiringItems.push({ vendor: v, item: item.label, date: item.date, daysUntil: Math.ceil((new Date(item.date) - new Date()) / 86400000) });
+            }
+          }
+        });
+      });
+      
+      document.getElementById('stat-total').textContent = vendors.length;
+      document.getElementById('stat-cleared').textContent = cleared;
+      document.getElementById('stat-not-cleared').textContent = notCleared;
+      document.getElementById('stat-expiring').textContent = expiringSoon + expiringItems.length;
+      
+      // Dashboard alerts
+      let alertsHtml = '';
+      if (notCleared > 0) {
+        alertsHtml += `<div class="alert-banner alert-danger">
+          <span style="font-size: 1.25rem;">🚨</span>
+          <span><strong>${notCleared} vendor${notCleared > 1 ? 's' : ''}</strong> not cleared to work. Review compliance issues below.</span>
+        </div>`;
+      }
+      document.getElementById('dashboard-alerts').innerHTML = alertsHtml;
+      
+      // Attention list
+      if (attentionItems.length === 0) {
+        document.getElementById('attention-list').innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><div>All vendors are compliant!</div></div>';
+      } else {
+        document.getElementById('attention-list').innerHTML = attentionItems.slice(0, 5).map(item => `
+          <div style="padding: 0.75rem; background: var(--danger-bg); border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer;" onclick="viewVendor(${item.vendor.id})">
+            <div style="font-weight: 600; margin-bottom: 0.25rem;">${item.vendor.name}</div>
+            <div style="font-size: 0.8rem; color: var(--danger);">${item.issues.join(', ')}</div>
+          </div>
+        `).join('');
+      }
+      
+      // Expiring list
+      if (expiringItems.length === 0) {
+        document.getElementById('expiring-list').innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><div>No items expiring soon</div></div>';
+      } else {
+        expiringItems.sort((a, b) => a.daysUntil - b.daysUntil);
+        document.getElementById('expiring-list').innerHTML = expiringItems.slice(0, 5).map(item => `
+          <div style="padding: 0.75rem; background: var(--warning-bg); border-radius: 8px; margin-bottom: 0.5rem; cursor: pointer;" onclick="viewVendor(${item.vendor.id})">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-weight: 600;">${item.vendor.name}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">${item.item}</div>
+              </div>
+              <span class="badge badge-warning">${item.daysUntil} days</span>
+            </div>
+          </div>
+        `).join('');
+      }
+      
+      // Cleared vendors
+      if (clearedItems.length === 0) {
+        document.getElementById('cleared-list').innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div>No cleared vendors yet</div></div>';
+      } else {
+        document.getElementById('cleared-list').innerHTML = `
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.75rem;">
+            ${clearedItems.slice(0, 8).map(v => `
+              <div style="padding: 0.75rem; background: var(--success-bg); border-radius: 8px; cursor: pointer;" onclick="viewVendor(${v.id})">
+                <div style="font-weight: 600;">${v.name}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">${categoryLabels[v.category] || v.category}</div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+    }
+    
+    // Vendors
+    function renderVendors() {
+      const search = document.getElementById('vendor-search').value.toLowerCase();
+      const catFilter = document.getElementById('vendor-filter-category').value;
+      const statusFilter = document.getElementById('vendor-filter-status').value;
+      
+      let filtered = vendors.filter(v => {
+        if (search && !v.name.toLowerCase().includes(search) && !v.contact?.toLowerCase().includes(search)) return false;
+        if (catFilter && v.category !== catFilter) return false;
+        if (statusFilter) {
+          const comp = getVendorCompliance(v);
+          if (statusFilter === 'cleared' && comp.status !== 'cleared') return false;
+          if (statusFilter === 'not-cleared' && comp.status !== 'not-cleared') return false;
+          if (statusFilter === 'pending' && comp.status !== 'pending') return false;
+        }
+        return true;
+      });
+      
+      if (filtered.length === 0) {
+        document.getElementById('vendors-table').innerHTML = `<tr><td colspan="7" class="empty-state">No vendors found</td></tr>`;
+        return;
+      }
+      
+      document.getElementById('vendors-table').innerHTML = filtered.map(v => {
+        const comp = getVendorCompliance(v);
+        const glStatus = getExpirationStatus(v.glExp);
+        const wcStatus = v.wcExempt ? { label: 'Exempt', class: 'badge-neutral' } : getExpirationStatus(v.wcExp);
+        
+        return `
+          <tr class="vendor-row-${comp.status}">
+            <td>
+              <div style="font-weight: 600;">${v.name}</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">${v.contact || ''}</div>
+            </td>
+            <td><span class="badge badge-neutral">${categoryLabels[v.category] || v.category}</span></td>
+            <td>
+              <div style="font-size: 0.875rem;">${v.email || ''}</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">${v.phone || ''}</div>
+            </td>
+            <td>
+              <span class="compliance-status compliance-${comp.status}">
+                ${comp.status === 'cleared' ? '✓ CLEARED' : comp.status === 'pending' ? '⚠ PENDING' : '✗ NOT CLEARED'}
+              </span>
+            </td>
+            <td><span class="badge ${glStatus.class}">${glStatus.label}</span></td>
+            <td><span class="badge ${wcStatus.class}">${wcStatus.label}</span></td>
+            <td>
+              <div class="quick-actions">
+                <button class="btn btn-sm btn-secondary" onclick="viewVendor(${v.id})">View</button>
+                <button class="btn btn-sm btn-secondary" onclick="editVendor(${v.id})">Edit</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    // Compliance Table
+    function renderCompliance() {
+      const filter = document.getElementById('compliance-filter').value;
+      
+      let filtered = vendors.filter(v => {
+        if (!filter) return true;
+        const comp = getVendorCompliance(v);
+        if (filter === 'cleared') return comp.status === 'cleared';
+        if (filter === 'not-cleared') return comp.status === 'not-cleared';
+        if (filter === 'expiring') return comp.status === 'pending' || comp.warnings.length > 0;
+        return true;
+      });
+      
+      if (filtered.length === 0) {
+        document.getElementById('compliance-table').innerHTML = `<tr><td colspan="8" class="empty-state">No vendors found</td></tr>`;
+        return;
+      }
+      
+      document.getElementById('compliance-table').innerHTML = filtered.map(v => {
+        const comp = getVendorCompliance(v);
+        const checkIcon = (valid, text = '') => valid ? 
+          `<span style="color: var(--success);">✓</span> ${text}` : 
+          `<span style="color: var(--danger);">✗</span> ${text}`;
+        
+        const glStatus = getExpirationStatus(v.glExp);
+        const wcStatus = v.wcExempt ? { status: 'valid', label: 'Exempt' } : getExpirationStatus(v.wcExp);
+        const licStatus = getExpirationStatus(v.licenseExp);
+        
+        return `
+          <tr class="vendor-row-${comp.status}">
+            <td><strong>${v.name}</strong></td>
+            <td>
+              <span class="compliance-status compliance-${comp.status}" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                ${comp.status === 'cleared' ? '✓ CLEARED' : comp.status === 'pending' ? '⚠ PENDING' : '✗ NOT CLEARED'}
+              </span>
+            </td>
+            <td>${checkIcon(v.hasW9)}</td>
+            <td>${checkIcon(v.hasContract)}</td>
+            <td>
+              ${glStatus.status === 'valid' ? `<span class="badge badge-success">✓ ${glStatus.label}</span>` :
+                glStatus.status === 'expiring' ? `<span class="badge badge-warning">⚠ ${glStatus.label}</span>` :
+                glStatus.status === 'expired' ? `<span class="badge badge-danger">✗ Expired</span>` :
+                `<span class="badge badge-neutral">—</span>`}
+            </td>
+            <td>
+              ${v.wcExempt ? `<span class="badge badge-neutral">Exempt</span>` :
+                wcStatus.status === 'valid' ? `<span class="badge badge-success">✓ ${wcStatus.label}</span>` :
+                wcStatus.status === 'expiring' ? `<span class="badge badge-warning">⚠ ${wcStatus.label}</span>` :
+                wcStatus.status === 'expired' ? `<span class="badge badge-danger">✗ Expired</span>` :
+                `<span class="badge badge-neutral">—</span>`}
+            </td>
+            <td>
+              ${!licensedTrades.includes(v.category) ? `<span class="badge badge-neutral">N/A</span>` :
+                licStatus.status === 'valid' ? `<span class="badge badge-success">✓</span>` :
+                licStatus.status === 'expiring' ? `<span class="badge badge-warning">⚠</span>` :
+                licStatus.status === 'expired' ? `<span class="badge badge-danger">✗</span>` :
+                `<span class="badge badge-neutral">—</span>`}
+            </td>
+            <td>
+              <button class="btn btn-sm btn-secondary" onclick="viewVendor(${v.id})">Details</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    // Documents
+    function renderDocuments() {
+      const search = document.getElementById('doc-search').value.toLowerCase();
+      const vendorFilter = document.getElementById('doc-filter-vendor').value;
+      const typeFilter = document.getElementById('doc-filter-type').value;
+      
+      let filtered = documents.filter(d => {
+        if (search && !d.name.toLowerCase().includes(search)) return false;
+        if (vendorFilter && d.vendorId !== parseInt(vendorFilter)) return false;
+        if (typeFilter && d.type !== typeFilter) return false;
+        return true;
+      });
+      
+      if (filtered.length === 0) {
+        document.getElementById('documents-table').innerHTML = `<tr><td colspan="7" class="empty-state">No documents found</td></tr>`;
+        return;
+      }
+      
+      document.getElementById('documents-table').innerHTML = filtered.map(d => {
+        const vendor = vendors.find(v => v.id === d.vendorId);
+        const expStatus = d.expires ? getExpirationStatus(d.expires) : { label: 'No expiration', class: 'badge-neutral' };
+        
+        return `
+          <tr>
+            <td><strong>${d.name}</strong></td>
+            <td>${vendor ? vendor.name : 'Unknown'}</td>
+            <td><span class="badge badge-info">${docTypeLabels[d.type] || d.type}</span></td>
+            <td>${formatDate(d.uploaded)}</td>
+            <td>${d.expires ? formatDate(d.expires) : '—'}</td>
+            <td><span class="badge ${expStatus.class}">${expStatus.label}</span></td>
+            <td>
+              <div class="quick-actions">
+                <button class="btn btn-sm btn-secondary" onclick="editDocument(${d.id})">Edit</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    // Contracts
+    function renderContracts() {
+      const search = document.getElementById('contract-search').value.toLowerCase();
+      const vendorFilter = document.getElementById('contract-filter-vendor').value;
+      const statusFilter = document.getElementById('contract-filter-status').value;
+      
+      let filtered = contracts.filter(c => {
+        if (search && !c.name.toLowerCase().includes(search)) return false;
+        if (vendorFilter && c.vendorId !== parseInt(vendorFilter)) return false;
+        if (statusFilter) {
+          const status = getContractStatus(c);
+          if (statusFilter !== status) return false;
+        }
+        return true;
+      });
+      
+      if (filtered.length === 0) {
+        document.getElementById('contracts-table').innerHTML = `<tr><td colspan="7" class="empty-state">No contracts found</td></tr>`;
+        return;
+      }
+      
+      document.getElementById('contracts-table').innerHTML = filtered.map(c => {
+        const vendor = vendors.find(v => v.id === c.vendorId);
+        const status = getContractStatus(c);
+        const statusClass = status === 'active' ? 'badge-success' : status === 'expiring' ? 'badge-warning' : 'badge-danger';
+        
+        return `
+          <tr>
+            <td><strong>${c.name}</strong></td>
+            <td>${vendor ? vendor.name : 'Unknown'}</td>
+            <td>${c.value ? '$' + c.value.toLocaleString() : '—'}</td>
+            <td>${formatDate(c.start)}</td>
+            <td>${formatDate(c.end)}</td>
+            <td><span class="badge ${statusClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+            <td>
+              <div class="quick-actions">
+                <button class="btn btn-sm btn-secondary" onclick="editContract(${c.id})">Edit</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    function getContractStatus(contract) {
+      if (!contract.end) return 'active';
+      const today = new Date();
+      const endDate = new Date(contract.end);
+      const daysUntil = Math.ceil((endDate - today) / 86400000);
+      if (daysUntil < 0) return 'expired';
+      if (daysUntil <= 60) return 'expiring';
+      return 'active';
+    }
+    
+    // View Vendor Detail
+    function viewVendor(id) {
+      const v = vendors.find(x => x.id === id);
+      if (!v) return;
+      
+      const comp = getVendorCompliance(v);
+      
+      let html = `
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="margin-bottom: 0.25rem;">${v.name}</h2>
+            <span class="badge badge-neutral">${categoryLabels[v.category] || v.category}</span>
+          </div>
+          <span class="compliance-status compliance-${comp.status}">
+            ${comp.status === 'cleared' ? '✓ CLEARED TO WORK' : comp.status === 'pending' ? '⚠ PENDING REVIEW' : '✗ NOT CLEARED'}
+          </span>
+        </div>
+      `;
+      
+      if (comp.issues.length > 0) {
+        html += `
+          <div class="alert-banner alert-danger" style="margin-bottom: 1rem;">
+            <span style="font-size: 1.25rem;">🚨</span>
+            <div>
+              <strong>Compliance Issues:</strong><br>
+              ${comp.issues.join('<br>')}
+            </div>
+          </div>
+        `;
+      }
+      
+      if (comp.warnings.length > 0) {
+        html += `
+          <div class="alert-banner alert-warning" style="margin-bottom: 1rem;">
+            <span style="font-size: 1.25rem;">⚠️</span>
+            <div>
+              <strong>Warnings:</strong><br>
+              ${comp.warnings.join('<br>')}
+            </div>
+          </div>
+        `;
+      }
+      
+      html += `
+        <div class="detail-grid">
+          <div>
+            <div class="detail-section">
+              <div class="detail-section-title">Contact Information</div>
+              <div style="display: grid; gap: 0.5rem;">
+                <div><strong>Contact:</strong> ${v.contact || '—'}</div>
+                <div><strong>Email:</strong> ${v.email || '—'}</div>
+                <div><strong>Phone:</strong> ${v.phone || '—'}</div>
+                <div><strong>Address:</strong> ${v.address || '—'}</div>
+                <div><strong>Tax ID:</strong> ${v.taxId || '—'}</div>
+              </div>
+            </div>
+            
+            <div class="detail-section">
+              <div class="detail-section-title">Insurance Coverage</div>
+              <div class="insurance-grid">
+                <div class="insurance-card">
+                  <div class="insurance-card-header">
+                    <span class="insurance-type">General Liability</span>
+                    <span class="badge ${getExpirationStatus(v.glExp).class}">${getExpirationStatus(v.glExp).label}</span>
+                  </div>
+                  <div class="insurance-detail"><span class="insurance-label">Carrier</span><span>${v.glCarrier || '—'}</span></div>
+                  <div class="insurance-detail"><span class="insurance-label">Policy #</span><span>${v.glPolicy || '—'}</span></div>
+                  <div class="insurance-detail"><span class="insurance-label">Limit</span><span>${v.glLimit ? '$' + v.glLimit.toLocaleString() : '—'}</span></div>
+                  <div class="insurance-detail"><span class="insurance-label">Additional Insured</span><span>${v.glAdditional ? '✓ Yes' : '✗ No'}</span></div>
+                </div>
+                
+                <div class="insurance-card">
+                  <div class="insurance-card-header">
+                    <span class="insurance-type">Workers Compensation</span>
+                    ${v.wcExempt ? 
+                      '<span class="badge badge-neutral">Exempt</span>' : 
+                      `<span class="badge ${getExpirationStatus(v.wcExp).class}">${getExpirationStatus(v.wcExp).label}</span>`
+                    }
+                  </div>
+                  ${v.wcExempt ? 
+                    '<div style="font-size: 0.875rem; color: var(--text-muted); padding: 0.5rem 0;">Sole proprietor / No employees</div>' :
+                    `<div class="insurance-detail"><span class="insurance-label">Carrier</span><span>${v.wcCarrier || '—'}</span></div>
+                    <div class="insurance-detail"><span class="insurance-label">Policy #</span><span>${v.wcPolicy || '—'}</span></div>
+                    <div class="insurance-detail"><span class="insurance-label">Limit</span><span>${v.wcLimit ? '$' + v.wcLimit.toLocaleString() : '—'}</span></div>`
+                  }
+                </div>
+                
+                ${v.autoCarrier ? `
+                <div class="insurance-card">
+                  <div class="insurance-card-header">
+                    <span class="insurance-type">Auto Insurance</span>
+                    <span class="badge ${getExpirationStatus(v.autoExp).class}">${getExpirationStatus(v.autoExp).label}</span>
+                  </div>
+                  <div class="insurance-detail"><span class="insurance-label">Carrier</span><span>${v.autoCarrier}</span></div>
+                  <div class="insurance-detail"><span class="insurance-label">Policy #</span><span>${v.autoPolicy || '—'}</span></div>
+                  <div class="insurance-detail"><span class="insurance-label">Limit</span><span>${v.autoLimit ? '$' + v.autoLimit.toLocaleString() : '—'}</span></div>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+            
+            ${v.licenseNum ? `
+            <div class="detail-section">
+              <div class="detail-section-title">Trade License</div>
+              <div style="display: grid; gap: 0.5rem;">
+                <div><strong>License #:</strong> ${v.licenseNum}</div>
+                <div><strong>Type:</strong> ${v.licenseType || '—'}</div>
+                <div><strong>Expires:</strong> <span class="badge ${getExpirationStatus(v.licenseExp).class}">${getExpirationStatus(v.licenseExp).label}</span></div>
+              </div>
+            </div>
+            ` : ''}
+          </div>
+          
+          <div>
+            <div class="detail-section">
+              <div class="detail-section-title">Compliance Checklist</div>
+              <div class="checklist">
+                <div class="checklist-item">
+                  <span class="checklist-icon ${v.hasW9 ? 'valid' : 'invalid'}">${v.hasW9 ? '✓' : '✗'}</span>
+                  <span class="checklist-text">W-9 on File</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="checklist-icon ${v.hasContract ? 'valid' : 'invalid'}">${v.hasContract ? '✓' : '✗'}</span>
+                  <span class="checklist-text">Signed Contract</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="checklist-icon ${v.glExp && getExpirationStatus(v.glExp).status !== 'expired' ? 'valid' : 'invalid'}">
+                    ${v.glExp && getExpirationStatus(v.glExp).status !== 'expired' ? '✓' : '✗'}
+                  </span>
+                  <span class="checklist-text">GL Insurance Current</span>
+                </div>
+                <div class="checklist-item">
+                  <span class="checklist-icon ${v.wcExempt || (v.wcExp && getExpirationStatus(v.wcExp).status !== 'expired') ? 'valid' : 'invalid'}">
+                    ${v.wcExempt || (v.wcExp && getExpirationStatus(v.wcExp).status !== 'expired') ? '✓' : '✗'}
+                  </span>
+                  <span class="checklist-text">Workers Comp ${v.wcExempt ? '(Exempt)' : 'Current'}</span>
+                </div>
+                ${licensedTrades.includes(v.category) ? `
+                <div class="checklist-item">
+                  <span class="checklist-icon ${v.licenseExp && getExpirationStatus(v.licenseExp).status !== 'expired' ? 'valid' : 'invalid'}">
+                    ${v.licenseExp && getExpirationStatus(v.licenseExp).status !== 'expired' ? '✓' : '✗'}
+                  </span>
+                  <span class="checklist-text">Trade License Current</span>
+                </div>
+                ` : ''}
+                <div class="checklist-item">
+                  <span class="checklist-icon ${v.hasBackground ? 'valid' : ''}" style="${!v.hasBackground ? 'color: var(--text-muted);' : ''}">
+                    ${v.hasBackground ? '✓' : '—'}
+                  </span>
+                  <span class="checklist-text">Background Check</span>
+                </div>
+              </div>
+            </div>
+            
+            ${v.notes ? `
+            <div class="detail-section">
+              <div class="detail-section-title">Notes</div>
+              <p style="font-size: 0.875rem;">${v.notes}</p>
+            </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('vendor-detail-content').innerHTML = html;
+      document.getElementById('vendor-detail-title').textContent = v.name;
+      document.getElementById('vendor-detail-edit-btn').onclick = () => {
+        closeModal('vendor-detail-modal');
+        editVendor(id);
+      };
+      openModal('vendor-detail-modal');
+    }
+    
+    // Vendor CRUD
+    function openVendorModal() {
+      document.getElementById('vendor-modal-title').textContent = 'Add Vendor';
+      document.getElementById('v-id').value = '';
+      document.getElementById('v-name').value = '';
+      document.getElementById('v-category').value = 'general';
+      document.getElementById('v-taxid').value = '';
+      document.getElementById('v-contact').value = '';
+      document.getElementById('v-email').value = '';
+      document.getElementById('v-phone').value = '';
+      document.getElementById('v-address').value = '';
+      document.getElementById('v-gl-carrier').value = '';
+      document.getElementById('v-gl-policy').value = '';
+      document.getElementById('v-gl-limit').value = '';
+      document.getElementById('v-gl-exp').value = '';
+      document.getElementById('v-gl-additional').checked = false;
+      document.getElementById('v-wc-carrier').value = '';
+      document.getElementById('v-wc-policy').value = '';
+      document.getElementById('v-wc-limit').value = '';
+      document.getElementById('v-wc-exp').value = '';
+      document.getElementById('v-wc-exempt').checked = false;
+      document.getElementById('v-auto-carrier').value = '';
+      document.getElementById('v-auto-policy').value = '';
+      document.getElementById('v-auto-limit').value = '';
+      document.getElementById('v-auto-exp').value = '';
+      document.getElementById('v-license-num').value = '';
+      document.getElementById('v-license-type').value = '';
+      document.getElementById('v-license-exp').value = '';
+      document.getElementById('v-w9').checked = false;
+      document.getElementById('v-contract').checked = false;
+      document.getElementById('v-background').checked = false;
+      document.getElementById('v-notes').value = '';
+      document.getElementById('v-delete-btn').style.display = 'none';
+      openModal('vendor-modal');
+    }
+    
+    function editVendor(id) {
+      const v = vendors.find(x => x.id === id);
+      if (!v) return;
+      
+      document.getElementById('vendor-modal-title').textContent = 'Edit Vendor';
+      document.getElementById('v-id').value = v.id;
+      document.getElementById('v-name').value = v.name;
+      document.getElementById('v-category').value = v.category;
+      document.getElementById('v-taxid').value = v.taxId || '';
+      document.getElementById('v-contact').value = v.contact || '';
+      document.getElementById('v-email').value = v.email || '';
+      document.getElementById('v-phone').value = v.phone || '';
+      document.getElementById('v-address').value = v.address || '';
+      document.getElementById('v-gl-carrier').value = v.glCarrier || '';
+      document.getElementById('v-gl-policy').value = v.glPolicy || '';
+      document.getElementById('v-gl-limit').value = v.glLimit || '';
+      document.getElementById('v-gl-exp').value = v.glExp || '';
+      document.getElementById('v-gl-additional').checked = v.glAdditional || false;
+      document.getElementById('v-wc-carrier').value = v.wcCarrier || '';
+      document.getElementById('v-wc-policy').value = v.wcPolicy || '';
+      document.getElementById('v-wc-limit').value = v.wcLimit || '';
+      document.getElementById('v-wc-exp').value = v.wcExp || '';
+      document.getElementById('v-wc-exempt').checked = v.wcExempt || false;
+      document.getElementById('v-auto-carrier').value = v.autoCarrier || '';
+      document.getElementById('v-auto-policy').value = v.autoPolicy || '';
+      document.getElementById('v-auto-limit').value = v.autoLimit || '';
+      document.getElementById('v-auto-exp').value = v.autoExp || '';
+      document.getElementById('v-license-num').value = v.licenseNum || '';
+      document.getElementById('v-license-type').value = v.licenseType || '';
+      document.getElementById('v-license-exp').value = v.licenseExp || '';
+      document.getElementById('v-w9').checked = v.hasW9 || false;
+      document.getElementById('v-contract').checked = v.hasContract || false;
+      document.getElementById('v-background').checked = v.hasBackground || false;
+      document.getElementById('v-notes').value = v.notes || '';
+      document.getElementById('v-delete-btn').style.display = 'block';
+      openModal('vendor-modal');
+    }
+    
+    function saveVendor() {
+      const name = document.getElementById('v-name').value.trim();
+      if (!name) {
+        showToast('Please enter a company name', 'error');
+        return;
+      }
+      
+      const id = document.getElementById('v-id').value;
+      const vendor = {
+        id: id ? parseInt(id) : Date.now(),
+        name,
+        category: document.getElementById('v-category').value,
+        taxId: document.getElementById('v-taxid').value.trim(),
+        contact: document.getElementById('v-contact').value.trim(),
+        email: document.getElementById('v-email').value.trim(),
+        phone: document.getElementById('v-phone').value.trim(),
+        address: document.getElementById('v-address').value.trim(),
+        glCarrier: document.getElementById('v-gl-carrier').value.trim(),
+        glPolicy: document.getElementById('v-gl-policy').value.trim(),
+        glLimit: parseInt(document.getElementById('v-gl-limit').value) || '',
+        glExp: document.getElementById('v-gl-exp').value,
+        glAdditional: document.getElementById('v-gl-additional').checked,
+        wcCarrier: document.getElementById('v-wc-carrier').value.trim(),
+        wcPolicy: document.getElementById('v-wc-policy').value.trim(),
+        wcLimit: parseInt(document.getElementById('v-wc-limit').value) || '',
+        wcExp: document.getElementById('v-wc-exp').value,
+        wcExempt: document.getElementById('v-wc-exempt').checked,
+        autoCarrier: document.getElementById('v-auto-carrier').value.trim(),
+        autoPolicy: document.getElementById('v-auto-policy').value.trim(),
+        autoLimit: parseInt(document.getElementById('v-auto-limit').value) || '',
+        autoExp: document.getElementById('v-auto-exp').value,
+        licenseNum: document.getElementById('v-license-num').value.trim(),
+        licenseType: document.getElementById('v-license-type').value.trim(),
+        licenseExp: document.getElementById('v-license-exp').value,
+        hasW9: document.getElementById('v-w9').checked,
+        hasContract: document.getElementById('v-contract').checked,
+        hasBackground: document.getElementById('v-background').checked,
+        notes: document.getElementById('v-notes').value.trim()
+      };
+      
+      if (id) {
+        const idx = vendors.findIndex(v => v.id === parseInt(id));
+        if (idx !== -1) vendors[idx] = vendor;
+      } else {
+        vendors.push(vendor);
+      }
+      
+      saveData();
+      closeModal('vendor-modal');
+      renderAll();
+      showToast(id ? 'Vendor updated' : 'Vendor added', 'success');
+    }
+    
+    function deleteVendor() {
+      if (!confirm('Delete this vendor? This will also delete associated documents and contracts.')) return;
+      
+      const id = parseInt(document.getElementById('v-id').value);
+      vendors = vendors.filter(v => v.id !== id);
+      documents = documents.filter(d => d.vendorId !== id);
+      contracts = contracts.filter(c => c.vendorId !== id);
+      
+      saveData();
+      closeModal('vendor-modal');
+      renderAll();
+      showToast('Vendor deleted', 'success');
+    }
+    
+    // Document CRUD
+    function openDocumentModal() {
+      document.getElementById('doc-modal-title').textContent = 'Add Document';
+      document.getElementById('d-id').value = '';
+      document.getElementById('d-vendor').value = '';
+      document.getElementById('d-type').value = 'gl_coi';
+      document.getElementById('d-name').value = '';
+      document.getElementById('d-uploaded').value = new Date().toISOString().split('T')[0];
+      document.getElementById('d-expires').value = '';
+      document.getElementById('d-notes').value = '';
+      document.getElementById('d-delete-btn').style.display = 'none';
+      openModal('document-modal');
+    }
+    
+    function editDocument(id) {
+      const d = documents.find(x => x.id === id);
+      if (!d) return;
+      
+      document.getElementById('doc-modal-title').textContent = 'Edit Document';
+      document.getElementById('d-id').value = d.id;
+      document.getElementById('d-vendor').value = d.vendorId;
+      document.getElementById('d-type').value = d.type;
+      document.getElementById('d-name').value = d.name;
+      document.getElementById('d-uploaded').value = d.uploaded;
+      document.getElementById('d-expires').value = d.expires || '';
+      document.getElementById('d-notes').value = d.notes || '';
+      document.getElementById('d-delete-btn').style.display = 'block';
+      openModal('document-modal');
+    }
+    
+    function saveDocument() {
+      const vendorId = parseInt(document.getElementById('d-vendor').value);
+      const name = document.getElementById('d-name').value.trim();
+      
+      if (!vendorId || !name) {
+        showToast('Please select a vendor and enter a document name', 'error');
+        return;
+      }
+      
+      const id = document.getElementById('d-id').value;
+      const doc = {
+        id: id ? parseInt(id) : Date.now(),
+        vendorId,
+        name,
+        type: document.getElementById('d-type').value,
+        uploaded: document.getElementById('d-uploaded').value,
+        expires: document.getElementById('d-expires').value,
+        notes: document.getElementById('d-notes').value.trim()
+      };
+      
+      if (id) {
+        const idx = documents.findIndex(d => d.id === parseInt(id));
+        if (idx !== -1) documents[idx] = doc;
+      } else {
+        documents.push(doc);
+      }
+      
+      saveData();
+      closeModal('document-modal');
+      renderAll();
+      showToast(id ? 'Document updated' : 'Document added', 'success');
+    }
+    
+    function deleteDocument() {
+      if (!confirm('Delete this document?')) return;
+      
+      const id = parseInt(document.getElementById('d-id').value);
+      documents = documents.filter(d => d.id !== id);
+      
+      saveData();
+      closeModal('document-modal');
+      renderAll();
+      showToast('Document deleted', 'success');
+    }
+    
+    // Contract CRUD
+    function openContractModal() {
+      document.getElementById('contract-modal-title').textContent = 'Add Contract';
+      document.getElementById('c-id').value = '';
+      document.getElementById('c-vendor').value = '';
+      document.getElementById('c-name').value = '';
+      document.getElementById('c-value').value = '';
+      document.getElementById('c-start').value = '';
+      document.getElementById('c-end').value = '';
+      document.getElementById('c-notes').value = '';
+      document.getElementById('c-delete-btn').style.display = 'none';
+      openModal('contract-modal');
+    }
+    
+    function editContract(id) {
+      const c = contracts.find(x => x.id === id);
+      if (!c) return;
+      
+      document.getElementById('contract-modal-title').textContent = 'Edit Contract';
+      document.getElementById('c-id').value = c.id;
+      document.getElementById('c-vendor').value = c.vendorId;
+      document.getElementById('c-name').value = c.name;
+      document.getElementById('c-value').value = c.value || '';
+      document.getElementById('c-start').value = c.start || '';
+      document.getElementById('c-end').value = c.end || '';
+      document.getElementById('c-notes').value = c.notes || '';
+      document.getElementById('c-delete-btn').style.display = 'block';
+      openModal('contract-modal');
+    }
+    
+    function saveContract() {
+      const vendorId = parseInt(document.getElementById('c-vendor').value);
+      const name = document.getElementById('c-name').value.trim();
+      
+      if (!vendorId || !name) {
+        showToast('Please select a vendor and enter a contract name', 'error');
+        return;
+      }
+      
+      const id = document.getElementById('c-id').value;
+      const contract = {
+        id: id ? parseInt(id) : Date.now(),
+        vendorId,
+        name,
+        value: parseFloat(document.getElementById('c-value').value) || 0,
+        start: document.getElementById('c-start').value,
+        end: document.getElementById('c-end').value,
+        notes: document.getElementById('c-notes').value.trim()
+      };
+      
+      if (id) {
+        const idx = contracts.findIndex(c => c.id === parseInt(id));
+        if (idx !== -1) contracts[idx] = contract;
+      } else {
+        contracts.push(contract);
+      }
+      
+      saveData();
+      closeModal('contract-modal');
+      renderAll();
+      showToast(id ? 'Contract updated' : 'Contract added', 'success');
+    }
+    
+    function deleteContract() {
+      if (!confirm('Delete this contract?')) return;
+      
+      const id = parseInt(document.getElementById('c-id').value);
+      contracts = contracts.filter(c => c.id !== id);
+      
+      saveData();
+      closeModal('contract-modal');
+      renderAll();
+      showToast('Contract deleted', 'success');
+    }
+    
+    // Settings
+    function openSettings() {
+      document.getElementById('req-w9').checked = settings.reqW9;
+      document.getElementById('req-contract').checked = settings.reqContract;
+      document.getElementById('req-gl').checked = settings.reqGL;
+      document.getElementById('req-wc').checked = settings.reqWC;
+      document.getElementById('req-license').checked = settings.reqLicense;
+      document.getElementById('min-gl').value = settings.minGL;
+      document.getElementById('min-wc').value = settings.minWC;
+      document.getElementById('alert-days').value = settings.alertDays;
+      openModal('settings-modal');
+    }
+    
+    function saveSettings() {
+      settings.reqW9 = document.getElementById('req-w9').checked;
+      settings.reqContract = document.getElementById('req-contract').checked;
+      settings.reqGL = document.getElementById('req-gl').checked;
+      settings.reqWC = document.getElementById('req-wc').checked;
+      settings.reqLicense = document.getElementById('req-license').checked;
+      settings.minGL = parseInt(document.getElementById('min-gl').value);
+      settings.minWC = parseInt(document.getElementById('min-wc').value);
+      settings.alertDays = parseInt(document.getElementById('alert-days').value);
+      
+      saveData();
+      closeModal('settings-modal');
+      renderAll();
+      showToast('Settings saved', 'success');
+    }
+    
+    // Reports
+    function generateReport(type) {
+      let data = [];
+      let filename = '';
+      
+      switch (type) {
+        case 'vendors':
+          filename = 'vendor-list.xlsx';
+          data = vendors.map(v => ({
+            'Vendor Name': v.name,
+            'Category': categoryLabels[v.category] || v.category,
+            'Contact': v.contact,
+            'Email': v.email,
+            'Phone': v.phone,
+            'Address': v.address,
+            'Tax ID': v.taxId,
+            'Status': getVendorCompliance(v).status.toUpperCase()
+          }));
+          break;
+          
+        case 'compliance':
+          filename = 'compliance-report.xlsx';
+          data = vendors.map(v => {
+            const comp = getVendorCompliance(v);
+            return {
+              'Vendor Name': v.name,
+              'Category': categoryLabels[v.category] || v.category,
+              'Status': comp.status.toUpperCase(),
+              'W-9': v.hasW9 ? 'Yes' : 'No',
+              'Contract': v.hasContract ? 'Yes' : 'No',
+              'GL Carrier': v.glCarrier,
+              'GL Policy': v.glPolicy,
+              'GL Limit': v.glLimit ? '$' + v.glLimit.toLocaleString() : '',
+              'GL Expires': v.glExp,
+              'WC Carrier': v.wcExempt ? 'EXEMPT' : v.wcCarrier,
+              'WC Policy': v.wcPolicy,
+              'WC Expires': v.wcExp,
+              'Trade License': v.licenseNum,
+              'License Expires': v.licenseExp,
+              'Issues': comp.issues.join('; ')
+            };
+          });
+          break;
+          
+        case 'expiring':
+          filename = 'expiring-items.xlsx';
+          vendors.forEach(v => {
+            [
+              { field: 'glExp', label: 'GL Insurance' },
+              { field: 'wcExp', label: 'Workers Comp' },
+              { field: 'autoExp', label: 'Auto Insurance' },
+              { field: 'licenseExp', label: 'Trade License' }
+            ].forEach(item => {
+              if (v[item.field]) {
+                const status = getExpirationStatus(v[item.field]);
+                if (status.status === 'expiring' || status.status === 'expired') {
+                  data.push({
+                    'Vendor': v.name,
+                    'Item': item.label,
+                    'Expiration Date': v[item.field],
+                    'Status': status.status.toUpperCase(),
+                    'Days Until': status.status === 'expired' ? 'EXPIRED' : status.label
+                  });
+                }
+              }
+            });
+          });
+          contracts.forEach(c => {
+            const status = getContractStatus(c);
+            if (status === 'expiring' || status === 'expired') {
+              const vendor = vendors.find(v => v.id === c.vendorId);
+              data.push({
+                'Vendor': vendor ? vendor.name : 'Unknown',
+                'Item': 'Contract: ' + c.name,
+                'Expiration Date': c.end,
+                'Status': status.toUpperCase(),
+                'Days Until': ''
+              });
+            }
+          });
+          data.sort((a, b) => new Date(a['Expiration Date']) - new Date(b['Expiration Date']));
+          break;
+          
+        case 'insurance':
+          filename = 'insurance-summary.xlsx';
+          data = vendors.filter(v => v.glCarrier || v.wcCarrier).map(v => ({
+            'Vendor Name': v.name,
+            'GL Carrier': v.glCarrier,
+            'GL Policy #': v.glPolicy,
+            'GL Limit': v.glLimit ? '$' + v.glLimit.toLocaleString() : '',
+            'GL Expires': v.glExp,
+            'GL Add\'l Insured': v.glAdditional ? 'Yes' : 'No',
+            'WC Status': v.wcExempt ? 'EXEMPT' : (v.wcCarrier ? 'Active' : 'None'),
+            'WC Carrier': v.wcCarrier,
+            'WC Policy #': v.wcPolicy,
+            'WC Limit': v.wcLimit ? '$' + v.wcLimit.toLocaleString() : '',
+            'WC Expires': v.wcExp,
+            'Auto Carrier': v.autoCarrier,
+            'Auto Policy #': v.autoPolicy,
+            'Auto Expires': v.autoExp
+          }));
+          break;
+      }
+      
+      if (data.length === 0) {
+        showToast('No data to export', 'warning');
+        return;
+      }
+      
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Report');
+      XLSX.writeFile(wb, filename);
+      showToast('Report downloaded', 'success');
+    }
+    
+    function exportComplianceReport() {
+      generateReport('compliance');
+    }
+    
+    // Import/Export
+    function exportData() {
+      const data = JSON.stringify({ vendors, documents, contracts, settings }, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vendorvault-backup.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Backup exported', 'success');
+    }
+    
+    function importData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (data.vendors) vendors = data.vendors;
+            if (data.documents) documents = data.documents;
+            if (data.contracts) contracts = data.contracts;
+            if (data.settings) settings = { ...settings, ...data.settings };
+            saveData();
+            renderAll();
+            showToast('Data imported', 'success');
+          } catch (err) {
+            showToast('Invalid file format', 'error');
+          }
+        };
+        reader.readAsText(file);
+      };
+      input.click();
+    }
+    
+    // Utilities
+    function formatDate(dateStr) {
+      if (!dateStr) return '—';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+    
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+    
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+    
+    // Initialize
+    init();
+  </script>
+</body>
+</html>

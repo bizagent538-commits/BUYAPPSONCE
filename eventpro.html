@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EventPro - Event Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#f8fafc;--card:#fff;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;--primary:#ec4899;--success:#22c55e;--warning:#f59e0b}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text)}
+    .app{display:flex;min-height:100vh}
+    .sidebar{width:220px;background:var(--card);border-right:1px solid var(--border);padding:20px;position:fixed;height:100vh}
+    .logo{display:flex;align-items:center;gap:10px;margin-bottom:24px}
+    .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),#f472b6);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px}
+    .logo-text{font-weight:700;font-size:18px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;cursor:pointer;color:var(--muted);margin-bottom:4px;font-size:14px}
+    .nav-item:hover,.nav-item.active{background:rgba(236,72,153,.1);color:var(--primary)}
+    .main{flex:1;margin-left:220px;padding:24px}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .title{font-size:22px;font-weight:700}
+    .btn{padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer;border:none;font-family:inherit;font-size:14px}
+    .btn-primary{background:var(--primary);color:white}
+    .btn-secondary{background:white;border:1px solid var(--border)}
+    .btn-sm{padding:6px 12px;font-size:12px}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+    .stat-card{background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border)}
+    .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+    .stat-value{font-size:24px;font-weight:700}
+    .card{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:20px}
+    .card-header{padding:14px 18px;border-bottom:1px solid var(--border);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+    .event-card{border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:var(--card)}
+    .view{display:none}
+    .view.active{display:block}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:100}
+    .modal-overlay.show{display:flex}
+    .modal{background:var(--card);border-radius:16px;padding:24px;width:100%;max-width:500px;max-height:90vh;overflow:auto}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .modal-title{font-size:18px;font-weight:700}
+    .close-btn{background:none;border:none;font-size:24px;cursor:pointer;color:var(--muted)}
+    .form-group{margin-bottom:14px}
+    .form-label{display:block;font-size:13px;font-weight:500;margin-bottom:6px}
+    .form-input,.form-select,.form-textarea{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);font-size:14px;font-family:inherit}
+    .badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .badge-upcoming{background:rgba(236,72,153,.15);color:var(--primary)}
+    .badge-past{background:rgba(100,116,139,.15);color:var(--muted)}
+    .calendar{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden}
+    .calendar-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border)}
+    .calendar-title{font-size:18px;font-weight:700}
+    .calendar-nav{display:flex;gap:8px}
+    .calendar-nav button{padding:8px 16px;border:1px solid var(--border);background:var(--card);border-radius:6px;cursor:pointer;font-family:inherit}
+    .calendar-nav button:hover{background:var(--bg)}
+    .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr)}
+    .calendar-day-header{padding:12px;text-align:center;font-weight:600;font-size:12px;color:var(--muted);background:var(--bg);border-bottom:1px solid var(--border)}
+    .calendar-day{min-height:100px;padding:8px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);cursor:pointer;transition:background .2s}
+    .calendar-day:hover{background:rgba(236,72,153,.05)}
+    .calendar-day:nth-child(7n){border-right:none}
+    .calendar-day.other-month{background:var(--bg);color:var(--muted)}
+    .calendar-day.today{background:rgba(236,72,153,.1)}
+    .day-number{font-size:14px;font-weight:600;margin-bottom:4px}
+    .day-event{font-size:11px;padding:3px 6px;background:var(--primary);color:white;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+    .day-event:hover{opacity:.8}
+    .day-more{font-size:10px;color:var(--muted);margin-top:2px}
+    @media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:768px){.sidebar{display:none}.main{margin-left:0}.calendar-day{min-height:60px}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="sidebar">
+      <div class="logo"><div class="logo-icon">🎉</div><span class="logo-text">EventPro</span></div>
+      <div class="nav-item active" data-view="events">📅 Events</div>
+      <div class="nav-item" data-view="calendar">📆 Calendar</div>
+      <div class="nav-item" data-view="rsvps">✉️ RSVPs</div>
+      <div class="nav-item" data-view="venues">📍 Venues</div>
+    </nav>
+    <main class="main">
+      <div id="view-events" class="view active">
+        <div class="header"><h1 class="title">Events</h1><button class="btn btn-primary" onclick="openModal()">+ Create Event</button></div>
+        <div class="stats">
+          <div class="stat-card"><div class="stat-label">Upcoming</div><div class="stat-value" style="color:var(--primary)" id="stat-upcoming">0</div></div>
+          <div class="stat-card"><div class="stat-label">Total RSVPs</div><div class="stat-value" id="stat-rsvps">0</div></div>
+          <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value" id="stat-month">0</div></div>
+          <div class="stat-card"><div class="stat-label">Venues</div><div class="stat-value" id="stat-venues">0</div></div>
+        </div>
+        <div id="event-list"></div>
+      </div>
+      <div id="view-calendar" class="view">
+        <div class="header"><h1 class="title">Event Calendar</h1><button class="btn btn-primary" onclick="openModal()">+ Create Event</button></div>
+        <div class="calendar">
+          <div class="calendar-header">
+            <div class="calendar-nav">
+              <button onclick="changeMonth(-1)">← Prev</button>
+              <button onclick="goToToday()">Today</button>
+              <button onclick="changeMonth(1)">Next →</button>
+            </div>
+            <div class="calendar-title" id="calendar-title">January 2026</div>
+          </div>
+          <div class="calendar-grid">
+            <div class="calendar-day-header">Sun</div>
+            <div class="calendar-day-header">Mon</div>
+            <div class="calendar-day-header">Tue</div>
+            <div class="calendar-day-header">Wed</div>
+            <div class="calendar-day-header">Thu</div>
+            <div class="calendar-day-header">Fri</div>
+            <div class="calendar-day-header">Sat</div>
+          </div>
+          <div class="calendar-grid" id="calendar-days"></div>
+        </div>
+      </div>
+      <div id="view-rsvps" class="view">
+        <div class="header"><h1 class="title">RSVP Management</h1></div>
+        <div class="card">
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr style="background:var(--bg)"><th style="padding:12px;text-align:left">Event</th><th style="padding:12px;text-align:left">Date</th><th style="padding:12px;text-align:center">Confirmed</th><th style="padding:12px;text-align:center">Maybe</th><th style="padding:12px;text-align:center">Declined</th><th style="padding:12px;text-align:center">Total</th></tr></thead>
+            <tbody id="rsvp-list"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="view-venues" class="view">
+        <div class="header"><h1 class="title">Venues</h1><button class="btn btn-primary" onclick="openVenueModal()">+ Add Venue</button></div>
+        <div class="card">
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr style="background:var(--bg)"><th style="padding:12px;text-align:left">Venue</th><th style="padding:12px;text-align:left">Address</th><th style="padding:12px;text-align:center">Capacity</th><th style="padding:12px;text-align:left">Amenities</th><th style="padding:12px;text-align:center">Actions</th></tr></thead>
+            <tbody id="venue-list"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div class="modal-overlay" id="event-modal">
+    <div class="modal">
+      <div class="modal-header"><h2 class="modal-title" id="event-modal-title">Create Event</h2><button class="close-btn" onclick="closeModal()">&times;</button></div>
+      <div class="form-group"><label class="form-label">Event Name *</label><input type="text" class="form-input" id="event-name" placeholder="Annual Gala"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">Date *</label><input type="date" class="form-input" id="event-date"></div>
+        <div class="form-group"><label class="form-label">Time</label><input type="time" class="form-input" id="event-time" value="18:00"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Venue</label><select class="form-select" id="event-venue"></select></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-textarea" id="event-desc" rows="2" placeholder="Event details..."></textarea></div>
+      <div class="form-group"><label class="form-label">Event Color</label>
+        <div style="display:flex;gap:8px">
+          <label style="cursor:pointer"><input type="radio" name="event-color" value="#ec4899" checked style="display:none"><span style="display:inline-block;width:32px;height:32px;background:#ec4899;border-radius:6px;border:3px solid var(--text)" class="color-opt"></span></label>
+          <label style="cursor:pointer"><input type="radio" name="event-color" value="#3b82f6" style="display:none"><span style="display:inline-block;width:32px;height:32px;background:#3b82f6;border-radius:6px;border:3px solid transparent" class="color-opt"></span></label>
+          <label style="cursor:pointer"><input type="radio" name="event-color" value="#22c55e" style="display:none"><span style="display:inline-block;width:32px;height:32px;background:#22c55e;border-radius:6px;border:3px solid transparent" class="color-opt"></span></label>
+          <label style="cursor:pointer"><input type="radio" name="event-color" value="#f59e0b" style="display:none"><span style="display:inline-block;width:32px;height:32px;background:#f59e0b;border-radius:6px;border:3px solid transparent" class="color-opt"></span></label>
+          <label style="cursor:pointer"><input type="radio" name="event-color" value="#8b5cf6" style="display:none"><span style="display:inline-block;width:32px;height:32px;background:#8b5cf6;border-radius:6px;border:3px solid transparent" class="color-opt"></span></label>
+        </div>
+      </div>
+      <input type="hidden" id="event-id">
+      <div style="display:flex;gap:12px;margin-top:16px">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveEvent()">Save Event</button>
+        <button class="btn" style="background:#fee2e2;color:#dc2626;margin-left:auto;display:none" id="delete-event-btn" onclick="deleteEvent()">Delete</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="venue-modal">
+    <div class="modal">
+      <div class="modal-header"><h2 class="modal-title">Add Venue</h2><button class="close-btn" onclick="closeVenueModal()">&times;</button></div>
+      <div class="form-group"><label class="form-label">Venue Name *</label><input type="text" class="form-input" id="venue-name" placeholder="Main Hall"></div>
+      <div class="form-group"><label class="form-label">Address</label><input type="text" class="form-input" id="venue-address" placeholder="123 Main St"></div>
+      <div class="form-group"><label class="form-label">Capacity</label><input type="number" class="form-input" id="venue-capacity" placeholder="100"></div>
+      <div class="form-group"><label class="form-label">Amenities</label><input type="text" class="form-input" id="venue-amenities" placeholder="AV, Kitchen, Stage"></div>
+      <div style="display:flex;gap:12px;margin-top:16px">
+        <button class="btn btn-secondary" onclick="closeVenueModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveVenue()">Add Venue</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    let events=[{id:1,name:'New Year Celebration',date:'2026-01-15',time:'19:00',venue:'Main Hall',desc:'Annual new year party with live music and dinner',color:'#ec4899',confirmed:45,maybe:12,declined:5},{id:2,name:'Board Meeting',date:'2026-01-20',time:'10:00',venue:'Conference Room',desc:'Q1 Planning and budget review',color:'#3b82f6',confirmed:12,maybe:2,declined:0},{id:3,name:'Community BBQ',date:'2026-01-25',time:'12:00',venue:'Outdoor Pavilion',desc:'Summer community gathering with food and games',color:'#22c55e',confirmed:78,maybe:20,declined:8},{id:4,name:'Training Workshop',date:'2026-02-05',time:'09:00',venue:'Conference Room',desc:'Annual safety training',color:'#f59e0b',confirmed:25,maybe:5,declined:2},{id:5,name:'Charity Gala',date:'2026-02-14',time:'18:00',venue:'Main Hall',desc:'Valentine\'s Day fundraiser',color:'#ec4899',confirmed:120,maybe:30,declined:10}];
+    let venues=[{id:1,name:'Main Hall',address:'100 Community Center Dr',capacity:150,amenities:'AV System, Stage, Kitchen, Dance Floor'},{id:2,name:'Conference Room',address:'100 Community Center Dr, Rm 201',capacity:30,amenities:'AV System, Whiteboard, Video Conferencing'},{id:3,name:'Outdoor Pavilion',address:'Community Park, North Side',capacity:200,amenities:'BBQ Grills, Picnic Tables, Restrooms, Playground'}];
+    let currentMonth=new Date().getMonth(),currentYear=new Date().getFullYear(),nextEventId=6,nextVenueId=4;
+    const SK='eventpro_data';
+    function saveData(){try{localStorage.setItem(SK,JSON.stringify({events,venues,nextEventId,nextVenueId}));}catch(e){}}
+    function loadData(){try{const s=localStorage.getItem(SK);if(s){const d=JSON.parse(s);if(d.events)events=d.events;if(d.venues)venues=d.venues;if(d.nextEventId)nextEventId=d.nextEventId;if(d.nextVenueId)nextVenueId=d.nextVenueId;}}catch(e){}}
+    document.querySelectorAll('.nav-item').forEach(item=>{item.addEventListener('click',function(){const view=this.dataset.view;document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+view).classList.add('active');document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));this.classList.add('active');render();});});
+    document.querySelectorAll('input[name="event-color"]').forEach(input=>{input.addEventListener('change',function(){document.querySelectorAll('.color-opt').forEach(o=>o.style.border='3px solid transparent');this.nextElementSibling.style.border='3px solid var(--text)';});});
+    function renderCalendar(){const months=['January','February','March','April','May','June','July','August','September','October','November','December'];document.getElementById('calendar-title').textContent=months[currentMonth]+' '+currentYear;const firstDay=new Date(currentYear,currentMonth,1).getDay();const daysInMonth=new Date(currentYear,currentMonth+1,0).getDate();const daysInPrevMonth=new Date(currentYear,currentMonth,0).getDate();const today=new Date();let html='';for(let i=firstDay-1;i>=0;i--){const day=daysInPrevMonth-i;html+=`<div class="calendar-day other-month"><div class="day-number">${day}</div></div>`;}for(let day=1;day<=daysInMonth;day++){const dateStr=`${currentYear}-${String(currentMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;const isToday=today.getDate()===day&&today.getMonth()===currentMonth&&today.getFullYear()===currentYear;const dayEvents=events.filter(e=>e.date===dateStr);html+=`<div class="calendar-day${isToday?' today':''}" onclick="openModalForDate('${dateStr}')">`;html+=`<div class="day-number">${day}</div>`;dayEvents.slice(0,2).forEach(e=>{html+=`<div class="day-event" style="background:${e.color}" onclick="event.stopPropagation();editEvent(${e.id})">${e.time?e.time.slice(0,5)+' ':''}${e.name}</div>`;});if(dayEvents.length>2){html+=`<div class="day-more">+${dayEvents.length-2} more</div>`;}html+='</div>';}const totalCells=firstDay+daysInMonth;const remaining=totalCells%7===0?0:7-(totalCells%7);for(let i=1;i<=remaining;i++){html+=`<div class="calendar-day other-month"><div class="day-number">${i}</div></div>`;}document.getElementById('calendar-days').innerHTML=html;}
+    function changeMonth(delta){currentMonth+=delta;if(currentMonth>11){currentMonth=0;currentYear++;}if(currentMonth<0){currentMonth=11;currentYear--;}renderCalendar();}
+    function goToToday(){currentMonth=new Date().getMonth();currentYear=new Date().getFullYear();renderCalendar();}
+    function render(){const now=new Date();const thisMonth=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;const upcoming=events.filter(e=>new Date(e.date)>=new Date(now.toDateString()));const monthEvents=events.filter(e=>e.date.startsWith(thisMonth));document.getElementById('stat-upcoming').textContent=upcoming.length;document.getElementById('stat-rsvps').textContent=events.reduce((s,e)=>s+(e.confirmed||0),0);document.getElementById('stat-month').textContent=monthEvents.length;document.getElementById('stat-venues').textContent=venues.length;document.getElementById('event-list').innerHTML=events.sort((a,b)=>new Date(a.date)-new Date(b.date)).map(e=>{const isPast=new Date(e.date)<new Date(now.toDateString());return`<div class="event-card"><div style="display:flex;justify-content:space-between;align-items:start"><div><div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;background:${e.color};border-radius:3px"></span><h3>${e.name}</h3></div><p style="color:var(--muted);margin-top:4px">${formatDate(e.date)}${e.time?' at '+formatTime(e.time):''} • ${e.venue}</p><p style="margin-top:8px">${e.desc||''}</p></div><div style="display:flex;gap:8px;align-items:center"><span class="badge ${isPast?'badge-past':'badge-upcoming'}">${isPast?'Past':'Upcoming'}</span><button class="btn btn-sm btn-secondary" onclick="editEvent(${e.id})">Edit</button></div></div><div style="display:flex;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)"><span>✅ ${e.confirmed||0} confirmed</span><span>🤔 ${e.maybe||0} maybe</span><span>❌ ${e.declined||0} declined</span></div></div>`;}).join('');document.getElementById('rsvp-list').innerHTML=events.map(e=>`<tr style="border-bottom:1px solid var(--border)"><td style="padding:12px"><strong>${e.name}</strong></td><td style="padding:12px">${formatDate(e.date)}</td><td style="padding:12px;text-align:center;color:var(--success)">${e.confirmed||0}</td><td style="padding:12px;text-align:center;color:var(--warning)">${e.maybe||0}</td><td style="padding:12px;text-align:center;color:var(--muted)">${e.declined||0}</td><td style="padding:12px;text-align:center;font-weight:600">${(e.confirmed||0)+(e.maybe||0)+(e.declined||0)}</td></tr>`).join('');document.getElementById('venue-list').innerHTML=venues.map(v=>`<tr style="border-bottom:1px solid var(--border)"><td style="padding:12px"><strong>${v.name}</strong></td><td style="padding:12px">${v.address||'-'}</td><td style="padding:12px;text-align:center">${v.capacity||'-'}</td><td style="padding:12px">${v.amenities||'-'}</td><td style="padding:12px;text-align:center"><button class="btn btn-sm btn-secondary" onclick="deleteVenue(${v.id})">Delete</button></td></tr>`).join('');document.getElementById('event-venue').innerHTML=venues.map(v=>`<option value="${v.name}">${v.name}</option>`).join('');renderCalendar();}
+    function formatDate(d){return new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});}
+    function formatTime(t){const[h,m]=t.split(':');const hour=parseInt(h);return`${hour>12?hour-12:hour}:${m} ${hour>=12?'PM':'AM'}`;}
+    function openModal(){document.getElementById('event-modal-title').textContent='Create Event';document.getElementById('event-id').value='';document.getElementById('event-name').value='';document.getElementById('event-date').value=new Date().toISOString().split('T')[0];document.getElementById('event-time').value='18:00';document.getElementById('event-venue').value=venues[0]?.name||'';document.getElementById('event-desc').value='';document.querySelector('input[name="event-color"][value="#ec4899"]').checked=true;document.querySelectorAll('.color-opt').forEach(o=>o.style.border='3px solid transparent');document.querySelector('input[name="event-color"]:checked').nextElementSibling.style.border='3px solid var(--text)';document.getElementById('delete-event-btn').style.display='none';document.getElementById('event-modal').classList.add('show');}
+    function openModalForDate(dateStr){openModal();document.getElementById('event-date').value=dateStr;}
+    function editEvent(id){const e=events.find(ev=>ev.id===id);if(!e)return;document.getElementById('event-modal-title').textContent='Edit Event';document.getElementById('event-id').value=e.id;document.getElementById('event-name').value=e.name;document.getElementById('event-date').value=e.date;document.getElementById('event-time').value=e.time||'';document.getElementById('event-venue').value=e.venue;document.getElementById('event-desc').value=e.desc||'';const colorInput=document.querySelector(`input[name="event-color"][value="${e.color}"]`);if(colorInput){colorInput.checked=true;document.querySelectorAll('.color-opt').forEach(o=>o.style.border='3px solid transparent');colorInput.nextElementSibling.style.border='3px solid var(--text)';}document.getElementById('delete-event-btn').style.display='block';document.getElementById('event-modal').classList.add('show');}
+    function closeModal(){document.getElementById('event-modal').classList.remove('show');}
+    function saveEvent(){const name=document.getElementById('event-name').value.trim();const date=document.getElementById('event-date').value;if(!name){alert('Please enter event name');return;}if(!date){alert('Please select a date');return;}const eventData={name,date,time:document.getElementById('event-time').value,venue:document.getElementById('event-venue').value,desc:document.getElementById('event-desc').value,color:document.querySelector('input[name="event-color"]:checked').value};const editId=document.getElementById('event-id').value;if(editId){const idx=events.findIndex(e=>e.id===parseInt(editId));if(idx>=0){events[idx]={...events[idx],...eventData};}}else{events.push({id:nextEventId++,...eventData,confirmed:0,maybe:0,declined:0});}closeModal();saveData();render();}
+    function deleteEvent(){const id=parseInt(document.getElementById('event-id').value);if(!id)return;if(!confirm('Delete this event?'))return;events=events.filter(e=>e.id!==id);closeModal();saveData();render();}
+    function openVenueModal(){document.getElementById('venue-name').value='';document.getElementById('venue-address').value='';document.getElementById('venue-capacity').value='';document.getElementById('venue-amenities').value='';document.getElementById('venue-modal').classList.add('show');}
+    function closeVenueModal(){document.getElementById('venue-modal').classList.remove('show');}
+    function saveVenue(){const name=document.getElementById('venue-name').value.trim();if(!name){alert('Please enter venue name');return;}venues.push({id:nextVenueId++,name,address:document.getElementById('venue-address').value,capacity:parseInt(document.getElementById('venue-capacity').value)||0,amenities:document.getElementById('venue-amenities').value});closeVenueModal();saveData();render();}
+    function deleteVenue(id){if(!confirm('Delete this venue?'))return;venues=venues.filter(v=>v.id!==id);saveData();render();}
+    loadData();render();
+  </script>
+  <footer style="text-align:center;padding:2rem;color:#64748b;border-top:1px solid #e2e8f0"><p>© 2026 BuyAppsOnce. Professional software without subscriptions.</p></footer>
+</body>
+</html>

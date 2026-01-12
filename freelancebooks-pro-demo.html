@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FreelanceBooks Pro - Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f8fafc; min-height: 100vh; }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar { width: 200px; background: #1e293b; padding: 16px; position: fixed; height: calc(100vh - 36px); top: 36px; display: flex; flex-direction: column; }
+    .logo { display: flex; align-items: center; gap: 8px; margin-bottom: 24px; }
+    .logo-icon { font-size: 24px; }
+    .logo-text { font-weight: 700; font-size: 16px; color: #fff; }
+    .nav-item { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 8px; cursor: pointer; color: #94a3b8; font-size: 14px; margin-bottom: 2px; }
+    .nav-item:hover { background: rgba(255,255,255,0.1); }
+    .nav-item.active { background: rgba(59,130,246,0.2); color: #fff; font-weight: 500; }
+    .main { flex: 1; margin-left: 200px; padding: 24px; margin-top: 36px; }
+    .timer-bar { display: flex; gap: 12px; align-items: center; background: #fff; padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #e2e8f0; flex-wrap: wrap; }
+    .timer-bar input, .timer-bar select { padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; }
+    .timer-display { font-family: monospace; font-size: 24px; font-weight: 700; min-width: 100px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .title { font-size: 24px; font-weight: 700; }
+    .btn { padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 14px; }
+    .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-stop { background: #ef4444; color: #fff; }
+    .btn-secondary { background: #fff; border: 1px solid #e2e8f0; }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; }
+    .stat-label { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+    .stat-value { font-size: 28px; font-weight: 700; }
+    .card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 11px; text-transform: uppercase; color: #64748b; }
+    td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
+    .status-unbilled { background: #fef3c7; color: #92400e; }
+    .status-billed { background: #dcfce7; color: #166534; }
+    .status-paid { background: #dcfce7; color: #166534; }
+    .status-sent { background: #dbeafe; color: #1e40af; }
+    .status-draft { background: #f1f5f9; color: #64748b; }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100; }
+    .modal { background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 500px; }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #64748b; }
+    .modal-actions { display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+    .field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 14px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .hidden { display: none !important; }
+    .demo-banner { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; padding: 8px 16px; text-align: center; font-size: 13px; position: fixed; top: 0; left: 0; right: 0; z-index: 300; }
+    .demo-banner a { color: #fff; font-weight: 600; }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: #fff; padding: 12px 20px; border-radius: 8px; z-index: 200; }
+  </style>
+</head>
+<body>
+  <div class="demo-banner">💼 FreelanceBooks Pro Demo - Data stored in browser | <a href="https://buyappsonce.com/landing-freelancebooks-pro.html">Get FreelanceBooks Pro - $129 →</a></div>
+  <div class="app">
+    <nav class="sidebar">
+      <div class="logo"><span class="logo-icon">💼</span><span class="logo-text">FreelanceBooks</span></div>
+      <div class="nav-item active" onclick="showTab('dashboard')">📊 Dashboard</div>
+      <div class="nav-item" onclick="showTab('time')">⏱️ Time</div>
+      <div class="nav-item" onclick="showTab('invoices')">📄 Invoices</div>
+      <div class="nav-item" onclick="showTab('clients')">👥 Clients</div>
+      <div class="nav-item" onclick="showTab('projects')">📁 Projects</div>
+      <div class="nav-item" onclick="showTab('expenses')">💳 Expenses</div>
+      <div class="nav-item" onclick="showTab('mileage')">🚗 Mileage</div>
+      <div class="nav-item" onclick="showTab('reports')">📈 Reports</div>
+    </nav>
+    <main class="main" id="mainContent"></main>
+  </div>
+  <div class="overlay hidden" id="modal" onclick="closeModal()">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-head"><h2 id="modalTitle">Modal</h2><button class="close-btn" onclick="closeModal()">×</button></div>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+  <div class="toast hidden" id="toast"></div>
+
+<script>
+const CATEGORIES = ['Advertising', 'Bank Fees', 'Equipment', 'Insurance', 'Internet', 'Legal', 'Office Supplies', 'Phone', 'Software', 'Travel', 'Meals', 'Other'];
+
+let state = { tab: 'dashboard', clients: [], projects: [], timeEntries: [], invoices: [], expenses: [], mileage: [], timerRunning: false, timerSeconds: 0, timerDesc: '', timerClient: '', timerProject: '', editing: null };
+let timerInterval = null;
+
+function init() {
+  loadData();
+  if (state.clients.length === 0) loadSampleData();
+  render();
+}
+
+function loadData() {
+  state.clients = JSON.parse(localStorage.getItem('fb_clients') || '[]');
+  state.projects = JSON.parse(localStorage.getItem('fb_projects') || '[]');
+  state.timeEntries = JSON.parse(localStorage.getItem('fb_time') || '[]');
+  state.invoices = JSON.parse(localStorage.getItem('fb_invoices') || '[]');
+  state.expenses = JSON.parse(localStorage.getItem('fb_expenses') || '[]');
+  state.mileage = JSON.parse(localStorage.getItem('fb_mileage') || '[]');
+}
+
+function saveData() {
+  localStorage.setItem('fb_clients', JSON.stringify(state.clients));
+  localStorage.setItem('fb_projects', JSON.stringify(state.projects));
+  localStorage.setItem('fb_time', JSON.stringify(state.timeEntries));
+  localStorage.setItem('fb_invoices', JSON.stringify(state.invoices));
+  localStorage.setItem('fb_expenses', JSON.stringify(state.expenses));
+  localStorage.setItem('fb_mileage', JSON.stringify(state.mileage));
+}
+
+function loadSampleData() {
+  const today = new Date().toISOString().split('T')[0];
+  const lastWeek = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+  state.clients = [
+    { id: 1, name: 'Acme Corp', company: 'Acme Corporation', email: 'contact@acme.com' },
+    { id: 2, name: 'StartupXYZ', company: 'StartupXYZ Inc', email: 'hello@startupxyz.com' },
+    { id: 3, name: 'Local Business', company: 'Main Street Shop', email: 'owner@mainstreet.com' }
+  ];
+  state.projects = [
+    { id: 1, client_id: 1, name: 'Website Redesign', hourly_rate: 125, status: 'active', budget_hours: 40 },
+    { id: 2, client_id: 1, name: 'SEO Optimization', hourly_rate: 100, status: 'active' },
+    { id: 3, client_id: 2, name: 'Mobile App MVP', hourly_rate: 150, status: 'active', budget_hours: 100 },
+    { id: 4, client_id: 3, name: 'Logo Design', hourly_rate: 85, status: 'completed' }
+  ];
+  state.timeEntries = [
+    { id: 1, client_id: 1, project_id: 1, date: today, description: 'Homepage wireframes', hours: 3.5, rate: 125, billable: true, billed: false },
+    { id: 2, client_id: 1, project_id: 1, date: lastWeek, description: 'Client meeting', hours: 1, rate: 125, billable: true, billed: false },
+    { id: 3, client_id: 2, project_id: 3, date: today, description: 'API development', hours: 5, rate: 150, billable: true, billed: false },
+    { id: 4, client_id: 2, project_id: 3, date: lastWeek, description: 'Database design', hours: 4, rate: 150, billable: true, billed: true, invoice_id: 1 },
+    { id: 5, client_id: 3, project_id: 4, date: lastWeek, description: 'Logo concepts', hours: 2.5, rate: 85, billable: true, billed: true, invoice_id: 2 }
+  ];
+  state.invoices = [
+    { id: 1, client_id: 2, invoice_number: 'INV-1001', issue_date: lastWeek, due_date: today, subtotal: 600, total: 600, status: 'sent' },
+    { id: 2, client_id: 3, invoice_number: 'INV-1002', issue_date: lastWeek, due_date: lastWeek, subtotal: 212.50, total: 212.50, status: 'paid', amount_paid: 212.50 }
+  ];
+  state.expenses = [
+    { id: 1, date: today, category: 'Software', vendor: 'Adobe', description: 'Creative Cloud', amount: 54.99, tax_deductible: true },
+    { id: 2, date: lastWeek, category: 'Internet', vendor: 'Comcast', description: 'Business internet', amount: 89.99, tax_deductible: true },
+    { id: 3, date: lastWeek, category: 'Office Supplies', vendor: 'Staples', description: 'Printer ink', amount: 45.00, tax_deductible: true }
+  ];
+  state.mileage = [
+    { id: 1, date: today, client_id: 1, purpose: 'Client meeting at Acme office', odometer_start: 45230, odometer_end: 45252, miles: 22, rate: 0.725, round_trip: false },
+    { id: 2, date: lastWeek, client_id: 2, purpose: 'Project kickoff meeting', odometer_start: 45180, odometer_end: 45195, miles: 15, rate: 0.725, round_trip: false },
+    { id: 3, date: lastWeek, client_id: null, purpose: 'Office supply store run', odometer_start: null, odometer_end: null, miles: 8, rate: 0.725, round_trip: true }
+  ];
+  saveData();
+}
+
+function showTab(tab) { state.tab = tab; updateNav(); render(); }
+function updateNav() { document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === ['dashboard', 'time', 'invoices', 'clients', 'projects', 'expenses', 'mileage', 'reports'].indexOf(state.tab))); }
+
+function getClient(id) { return state.clients.find(c => c.id === id); }
+function getProject(id) { return state.projects.find(p => p.id === id); }
+function fmt(n) { return '$' + (n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fmtDate(d) { return d ? new Date(d + 'T12:00:00').toLocaleDateString() : '-'; }
+function fmtTimer(s) { return `${Math.floor(s/3600).toString().padStart(2,'0')}:${Math.floor((s%3600)/60).toString().padStart(2,'0')}:${(s%60).toString().padStart(2,'0')}`; }
+function thisMonth() { return new Date().toISOString().slice(0, 7); }
+function thisYear() { return new Date().getFullYear().toString(); }
+
+function startTimer() { state.timerRunning = true; timerInterval = setInterval(() => { state.timerSeconds++; render(); }, 1000); render(); }
+function stopTimer() {
+  state.timerRunning = false; clearInterval(timerInterval);
+  const hours = Math.round((state.timerSeconds / 3600) * 100) / 100;
+  if (hours >= 0.01) {
+    const proj = getProject(parseInt(state.timerProject));
+    state.timeEntries.unshift({ id: Date.now(), client_id: state.timerClient ? parseInt(state.timerClient) : null, project_id: state.timerProject ? parseInt(state.timerProject) : null, date: new Date().toISOString().split('T')[0], description: state.timerDesc || 'Timer entry', hours, rate: proj?.hourly_rate || 100, billable: true, billed: false });
+    saveData(); toast(`Logged ${hours} hours`);
+  }
+  state.timerSeconds = 0; state.timerDesc = ''; render();
+}
+
+function createInvoice(clientId) {
+  const unbilled = state.timeEntries.filter(t => t.client_id === clientId && t.billable && !t.billed);
+  if (unbilled.length === 0) { toast('No unbilled time'); return; }
+  const subtotal = unbilled.reduce((s, t) => s + t.hours * t.rate, 0);
+  const invNum = `INV-${1001 + state.invoices.length}`;
+  const inv = { id: Date.now(), client_id: clientId, invoice_number: invNum, issue_date: new Date().toISOString().split('T')[0], due_date: new Date(Date.now() + 30*86400000).toISOString().split('T')[0], subtotal, total: subtotal, status: 'draft' };
+  state.invoices.unshift(inv);
+  unbilled.forEach(t => { t.billed = true; t.invoice_id = inv.id; });
+  saveData(); toast(`Invoice ${invNum} created`); render();
+}
+
+function markPaid(id) {
+  const inv = state.invoices.find(i => i.id === id);
+  if (inv) { inv.status = 'paid'; inv.amount_paid = inv.total; }
+  saveData(); toast('Marked paid'); render();
+}
+
+function render() {
+  const main = document.getElementById('mainContent');
+  const unbilled = state.timeEntries.filter(t => t.billable && !t.billed);
+  const unbilledAmt = unbilled.reduce((s, t) => s + t.hours * t.rate, 0);
+  const outstanding = state.invoices.filter(i => i.status !== 'paid');
+  const outstandingAmt = outstanding.reduce((s, i) => s + (i.total - (i.amount_paid || 0)), 0);
+  const monthIncome = state.invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.amount_paid || 0), 0);
+  const monthExpenses = state.expenses.filter(e => e.date?.startsWith(thisMonth())).reduce((s, e) => s + e.amount, 0);
+
+  const timerBar = `
+    <div class="timer-bar">
+      <input style="flex:1;max-width:300px" placeholder="What are you working on?" value="${state.timerDesc}" oninput="state.timerDesc=this.value">
+      <select style="width:150px" onchange="state.timerClient=this.value"><option value="">Client</option>${state.clients.map(c => `<option value="${c.id}" ${state.timerClient==c.id?'selected':''}>${c.name}</option>`).join('')}</select>
+      <select style="width:150px" onchange="state.timerProject=this.value"><option value="">Project</option>${state.projects.filter(p => !state.timerClient || p.client_id==state.timerClient).map(p => `<option value="${p.id}" ${state.timerProject==p.id?'selected':''}>${p.name}</option>`).join('')}</select>
+      <div class="timer-display">${fmtTimer(state.timerSeconds)}</div>
+      ${state.timerRunning ? `<button class="btn btn-stop" onclick="stopTimer()">⏹ Stop</button>` : `<button class="btn btn-primary" onclick="startTimer()">▶ Start</button>`}
+    </div>
+  `;
+
+  switch (state.tab) {
+    case 'dashboard':
+      main.innerHTML = timerBar + `
+        <div class="header"><h1 class="title">Dashboard</h1></div>
+        <div class="stats">
+          <div class="stat-card"><div class="stat-label">Unbilled Time</div><div class="stat-value" style="color:#f59e0b">${fmt(unbilledAmt)}</div><div style="font-size:12px;color:#64748b">${unbilled.length} entries</div></div>
+          <div class="stat-card"><div class="stat-label">Outstanding</div><div class="stat-value" style="color:#3b82f6">${fmt(outstandingAmt)}</div><div style="font-size:12px;color:#64748b">${outstanding.length} invoices</div></div>
+          <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value" style="color:#22c55e">${fmt(monthIncome)}</div><div style="font-size:12px;color:#64748b">income</div></div>
+          <div class="stat-card"><div class="stat-label">Expenses</div><div class="stat-value" style="color:#ef4444">${fmt(monthExpenses)}</div><div style="font-size:12px;color:#64748b">this month</div></div>
+        </div>
+        <div class="grid-2">
+          <div class="card"><h3 style="margin-bottom:16px">Recent Time</h3>
+            ${state.timeEntries.slice(0, 5).map(t => `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0"><div><div>${t.description}</div><div style="font-size:12px;color:#64748b">${getClient(t.client_id)?.name || 'No client'}</div></div><div style="text-align:right"><div style="font-weight:600">${t.hours}h</div><div style="font-size:12px;color:#64748b">${fmt(t.hours * t.rate)}</div></div></div>`).join('')}
+          </div>
+          <div class="card"><h3 style="margin-bottom:16px">Unbilled by Client</h3>
+            ${state.clients.filter(c => unbilled.some(t => t.client_id === c.id)).map(c => {
+              const clientUnbilled = unbilled.filter(t => t.client_id === c.id);
+              const total = clientUnbilled.reduce((s, t) => s + t.hours * t.rate, 0);
+              return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #e2e8f0"><div><div style="font-weight:500">${c.name}</div><div style="font-size:12px;color:#64748b">${clientUnbilled.length} entries</div></div><div style="display:flex;gap:12px;align-items:center"><span style="font-weight:600">${fmt(total)}</span><button class="btn btn-sm btn-secondary" onclick="createInvoice(${c.id})">Invoice</button></div></div>`;
+            }).join('') || '<p style="color:#64748b">No unbilled time</p>'}
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'time':
+      main.innerHTML = timerBar + `
+        <div class="header"><h1 class="title">Time Entries</h1><button class="btn btn-primary" onclick="openTimeModal()">+ Add Time</button></div>
+        <div class="card">
+          <table><thead><tr><th>Date</th><th>Client</th><th>Project</th><th>Description</th><th>Hours</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+          <tbody>${state.timeEntries.map(t => `
+            <tr><td>${fmtDate(t.date)}</td><td>${getClient(t.client_id)?.name || '-'}</td><td>${getProject(t.project_id)?.name || '-'}</td><td>${t.description}</td><td>${t.hours}h</td><td>${fmt(t.hours * t.rate)}</td><td><span class="badge ${t.billed ? 'status-billed' : t.billable ? 'status-unbilled' : 'status-draft'}">${t.billed ? 'Billed' : t.billable ? 'Unbilled' : 'Non-billable'}</span></td><td>${!t.billed ? `<button class="btn btn-sm btn-secondary" onclick="editTime(${t.id})">Edit</button> <button class="btn btn-sm" style="color:#ef4444" onclick="deleteTime(${t.id})">×</button>` : ''}</td></tr>
+          `).join('')}</tbody></table>
+        </div>
+      `;
+      break;
+
+    case 'invoices':
+      main.innerHTML = `
+        <div class="header"><h1 class="title">Invoices</h1></div>
+        <div class="card">
+          <table><thead><tr><th>Invoice #</th><th>Client</th><th>Date</th><th>Due</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+          <tbody>${state.invoices.map(i => `
+            <tr><td><strong>${i.invoice_number}</strong></td><td>${getClient(i.client_id)?.name}</td><td>${fmtDate(i.issue_date)}</td><td>${fmtDate(i.due_date)}</td><td style="font-weight:600">${fmt(i.total)}</td><td><span class="badge status-${i.status}">${i.status}</span></td><td>${i.status !== 'paid' ? `<button class="btn btn-sm btn-secondary" onclick="markPaid(${i.id})">Mark Paid</button>` : ''}</td></tr>
+          `).join('')}</tbody></table>
+        </div>
+      `;
+      break;
+
+    case 'clients':
+      main.innerHTML = `
+        <div class="header"><h1 class="title">Clients</h1><button class="btn btn-primary" onclick="openClientModal()">+ Add Client</button></div>
+        <div class="grid">${state.clients.map(c => {
+          const billed = state.timeEntries.filter(t => t.client_id === c.id && t.billed).reduce((s, t) => s + t.hours * t.rate, 0);
+          return `<div class="card" onclick="editClient(${c.id})"><h3>${c.name}</h3>${c.company ? `<p style="color:#64748b;font-size:14px">${c.company}</p>` : ''}<div style="margin-top:12px;font-size:13px">Total billed: ${fmt(billed)}</div></div>`;
+        }).join('')}</div>
+      `;
+      break;
+
+    case 'projects':
+      main.innerHTML = `
+        <div class="header"><h1 class="title">Projects</h1><button class="btn btn-primary" onclick="openProjectModal()">+ Add Project</button></div>
+        <div class="grid">${state.projects.map(p => {
+          const hours = state.timeEntries.filter(t => t.project_id === p.id).reduce((s, t) => s + t.hours, 0);
+          return `<div class="card" onclick="editProject(${p.id})"><span class="badge ${p.status === 'active' ? 'status-unbilled' : 'status-paid'}">${p.status}</span><h3 style="margin-top:8px">${p.name}</h3><p style="color:#64748b;font-size:14px">${getClient(p.client_id)?.name || 'No client'}</p><div style="margin-top:12px;font-size:13px"><div>${hours}h logged ${p.budget_hours ? `/ ${p.budget_hours}h budget` : ''}</div><div>${fmt(p.hourly_rate)}/hr</div></div></div>`;
+        }).join('')}</div>
+      `;
+      break;
+
+    case 'expenses':
+      main.innerHTML = `
+        <div class="header"><h1 class="title">Expenses</h1><button class="btn btn-primary" onclick="openExpenseModal()">+ Add Expense</button></div>
+        <div class="card">
+          <table><thead><tr><th>Date</th><th>Category</th><th>Vendor</th><th>Description</th><th>Amount</th><th></th></tr></thead>
+          <tbody>${state.expenses.map(e => `
+            <tr><td>${fmtDate(e.date)}</td><td>${e.category}</td><td>${e.vendor}</td><td>${e.description}</td><td style="font-weight:600">${fmt(e.amount)}</td><td><button class="btn btn-sm btn-secondary" onclick="editExpense(${e.id})">Edit</button> <button class="btn btn-sm" style="color:#ef4444" onclick="deleteExpense(${e.id})">×</button></td></tr>
+          `).join('')}</tbody></table>
+        </div>
+      `;
+      break;
+
+    case 'mileage':
+      const yearMiles = state.mileage.filter(m => m.date?.startsWith(thisYear())).reduce((s, m) => s + m.miles, 0);
+      const yearMileageDeduction = yearMiles * 0.725;
+      main.innerHTML = `
+        <div class="header"><h1 class="title">Mileage</h1><button class="btn btn-primary" onclick="openMileageModal()">+ Add Trip</button></div>
+        <div class="stats">
+          <div class="stat-card"><div class="stat-label">This Year</div><div class="stat-value">${yearMiles.toFixed(1)} mi</div></div>
+          <div class="stat-card"><div class="stat-label">Deduction (${thisYear()})</div><div class="stat-value" style="color:#22c55e">${fmt(yearMileageDeduction)}</div></div>
+          <div class="stat-card"><div class="stat-label">2026 IRS Rate</div><div class="stat-value">$0.725</div><div style="font-size:12px;color:#64748b">per mile</div></div>
+        </div>
+        <div class="card">
+          <table><thead><tr><th>Date</th><th>Purpose</th><th>Client</th><th>Odometer</th><th>Miles</th><th>Deduction</th><th></th></tr></thead>
+          <tbody>${state.mileage.map(m => `
+            <tr><td>${fmtDate(m.date)}</td><td>${m.purpose}</td><td>${getClient(m.client_id)?.name || '-'}</td><td>${m.odometer_start && m.odometer_end ? m.odometer_start + ' → ' + m.odometer_end : '-'}</td><td>${m.miles} mi${m.round_trip ? ' (RT)' : ''}</td><td style="font-weight:600;color:#22c55e">${fmt(m.miles * 0.725)}</td><td><button class="btn btn-sm btn-secondary" onclick="editMileage(${m.id})">Edit</button> <button class="btn btn-sm" style="color:#ef4444" onclick="deleteMileage(${m.id})">×</button></td></tr>
+          `).join('')}</tbody></table>
+        </div>
+      `;
+      break;
+
+    case 'reports':
+      const yearIncome = state.invoices.filter(i => i.status === 'paid').reduce((s, i) => s + (i.amount_paid || 0), 0);
+      const yearExpenses = state.expenses.reduce((s, e) => s + e.amount, 0);
+      const reportMiles = state.mileage.reduce((s, m) => s + m.miles, 0);
+      const reportMileageDeduction = reportMiles * 0.725;
+      main.innerHTML = `
+        <div class="header"><h1 class="title">Reports</h1></div>
+        <div class="grid-2">
+          <div class="card"><h3 style="margin-bottom:16px">Profit & Loss (${thisYear()})</h3>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0"><span>Income</span><span style="color:#22c55e;font-weight:600">${fmt(yearIncome)}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0"><span>Expenses</span><span style="color:#ef4444;font-weight:600">${fmt(yearExpenses)}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0"><span>Mileage Deduction</span><span style="color:#ef4444;font-weight:600">${fmt(reportMileageDeduction)}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:12px 0;font-weight:700;font-size:18px"><span>Net Profit</span><span style="color:${yearIncome - yearExpenses - reportMileageDeduction >= 0 ? '#22c55e' : '#ef4444'}">${fmt(yearIncome - yearExpenses - reportMileageDeduction)}</span></div>
+          </div>
+          <div class="card"><h3 style="margin-bottom:16px">Mileage Summary (${thisYear()})</h3>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0"><span>Total Miles</span><span style="font-weight:600">${reportMiles.toFixed(1)}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0"><span>IRS Rate</span><span>$0.725/mi</span></div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e2e8f0"><span>Total Trips</span><span>${state.mileage.length}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:12px 0;font-weight:700;font-size:18px"><span>Total Deduction</span><span style="color:#22c55e">${fmt(reportMileageDeduction)}</span></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:20px"><h3 style="margin-bottom:16px">Expenses by Category</h3>
+            ${CATEGORIES.map(cat => { const total = state.expenses.filter(e => e.category === cat).reduce((s, e) => s + e.amount, 0); return total > 0 ? `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e2e8f0"><span>${cat}</span><span>${fmt(total)}</span></div>` : ''; }).join('')}
+            <div style="display:flex;justify-content:space-between;padding:12px 0;font-weight:700"><span>Total</span><span>${fmt(yearExpenses)}</span></div>
+          </div>
+      `;
+      break;
+  }
+}
+
+function openModal(title, content) { document.getElementById('modalTitle').textContent = title; document.getElementById('modalContent').innerHTML = content; document.getElementById('modal').classList.remove('hidden'); }
+function closeModal() { document.getElementById('modal').classList.add('hidden'); state.editing = null; }
+
+function openClientModal(client) {
+  state.editing = client;
+  openModal(client ? 'Edit Client' : 'Add Client', `
+    <form onsubmit="saveClient(event)">
+      <div class="row"><div class="field"><label>Name</label><input name="name" value="${client?.name || ''}" required></div><div class="field"><label>Company</label><input name="company" value="${client?.company || ''}"></div></div>
+      <div class="row"><div class="field"><label>Email</label><input type="email" name="email" value="${client?.email || ''}"></div><div class="field"><label>Phone</label><input name="phone" value="${client?.phone || ''}"></div></div>
+      <div class="modal-actions"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+    </form>
+  `);
+}
+function editClient(id) { openClientModal(state.clients.find(c => c.id === id)); }
+function saveClient(e) {
+  e.preventDefault(); const f = e.target;
+  if (state.editing) { Object.assign(state.editing, { name: f.name.value, company: f.company.value, email: f.email.value }); }
+  else { state.clients.push({ id: Date.now(), name: f.name.value, company: f.company.value, email: f.email.value }); }
+  saveData(); closeModal(); render(); toast('Client saved');
+}
+
+function openProjectModal(project) {
+  state.editing = project;
+  openModal(project ? 'Edit Project' : 'Add Project', `
+    <form onsubmit="saveProject(event)">
+      <div class="field"><label>Name</label><input name="name" value="${project?.name || ''}" required></div>
+      <div class="row"><div class="field"><label>Client</label><select name="client_id"><option value="">None</option>${state.clients.map(c => `<option value="${c.id}" ${project?.client_id == c.id ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div><div class="field"><label>Status</label><select name="status"><option value="active" ${project?.status === 'active' ? 'selected' : ''}>Active</option><option value="completed" ${project?.status === 'completed' ? 'selected' : ''}>Completed</option></select></div></div>
+      <div class="row"><div class="field"><label>Hourly Rate</label><input type="number" step="0.01" name="hourly_rate" value="${project?.hourly_rate || 100}"></div><div class="field"><label>Budget Hours</label><input type="number" name="budget_hours" value="${project?.budget_hours || ''}"></div></div>
+      <div class="modal-actions"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+    </form>
+  `);
+}
+function editProject(id) { openProjectModal(state.projects.find(p => p.id === id)); }
+function saveProject(e) {
+  e.preventDefault(); const f = e.target;
+  const data = { name: f.name.value, client_id: f.client_id.value ? parseInt(f.client_id.value) : null, status: f.status.value, hourly_rate: parseFloat(f.hourly_rate.value), budget_hours: f.budget_hours.value ? parseFloat(f.budget_hours.value) : null };
+  if (state.editing) { Object.assign(state.editing, data); }
+  else { data.id = Date.now(); state.projects.push(data); }
+  saveData(); closeModal(); render(); toast('Project saved');
+}
+
+function openTimeModal(entry) {
+  state.editing = entry;
+  openModal(entry ? 'Edit Time Entry' : 'Add Time Entry', `
+    <form onsubmit="saveTime(event)">
+      <div class="row"><div class="field"><label>Date</label><input type="date" name="date" value="${entry?.date || new Date().toISOString().split('T')[0]}" required></div><div class="field"><label>Hours</label><input type="number" step="0.25" name="hours" value="${entry?.hours || ''}" required></div></div>
+      <div class="row"><div class="field"><label>Client</label><select name="client_id"><option value="">None</option>${state.clients.map(c => `<option value="${c.id}" ${entry?.client_id == c.id ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div><div class="field"><label>Project</label><select name="project_id"><option value="">None</option>${state.projects.map(p => `<option value="${p.id}" ${entry?.project_id == p.id ? 'selected' : ''}>${p.name}</option>`).join('')}</select></div></div>
+      <div class="field"><label>Description</label><input name="description" value="${entry?.description || ''}"></div>
+      <div class="row"><div class="field"><label>Rate</label><input type="number" step="0.01" name="rate" value="${entry?.rate || 100}"></div><div class="field"><label>Billable</label><input type="checkbox" name="billable" ${entry?.billable !== false ? 'checked' : ''}></div></div>
+      <div class="modal-actions"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+    </form>
+  `);
+}
+function editTime(id) { openTimeModal(state.timeEntries.find(t => t.id === id)); }
+function saveTime(e) {
+  e.preventDefault(); const f = e.target;
+  const data = { date: f.date.value, hours: parseFloat(f.hours.value), client_id: f.client_id.value ? parseInt(f.client_id.value) : null, project_id: f.project_id.value ? parseInt(f.project_id.value) : null, description: f.description.value, rate: parseFloat(f.rate.value), billable: f.billable.checked, billed: false };
+  if (state.editing) { Object.assign(state.editing, data); }
+  else { data.id = Date.now(); state.timeEntries.unshift(data); }
+  saveData(); closeModal(); render(); toast('Time entry saved');
+}
+function deleteTime(id) { if (confirm('Delete?')) { state.timeEntries = state.timeEntries.filter(t => t.id !== id); saveData(); render(); toast('Deleted'); } }
+
+function openExpenseModal(expense) {
+  state.editing = expense;
+  openModal(expense ? 'Edit Expense' : 'Add Expense', `
+    <form onsubmit="saveExpense(event)">
+      <div class="row"><div class="field"><label>Date</label><input type="date" name="date" value="${expense?.date || new Date().toISOString().split('T')[0]}" required></div><div class="field"><label>Amount</label><input type="number" step="0.01" name="amount" value="${expense?.amount || ''}" required></div></div>
+      <div class="row"><div class="field"><label>Category</label><select name="category">${CATEGORIES.map(c => `<option value="${c}" ${expense?.category === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div><div class="field"><label>Vendor</label><input name="vendor" value="${expense?.vendor || ''}"></div></div>
+      <div class="field"><label>Description</label><input name="description" value="${expense?.description || ''}"></div>
+      <div class="modal-actions"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+    </form>
+  `);
+}
+function editExpense(id) { openExpenseModal(state.expenses.find(e => e.id === id)); }
+function saveExpense(e) {
+  e.preventDefault(); const f = e.target;
+  const data = { date: f.date.value, amount: parseFloat(f.amount.value), category: f.category.value, vendor: f.vendor.value, description: f.description.value, tax_deductible: true };
+  if (state.editing) { Object.assign(state.editing, data); }
+  else { data.id = Date.now(); state.expenses.unshift(data); }
+  saveData(); closeModal(); render(); toast('Expense saved');
+}
+function deleteExpense(id) { if (confirm('Delete?')) { state.expenses = state.expenses.filter(e => e.id !== id); saveData(); render(); toast('Deleted'); } }
+
+function openMileageModal(entry) {
+  state.editing = entry;
+  openModal(entry ? 'Edit Mileage' : 'Add Mileage Trip', `
+    <form onsubmit="saveMileage(event)">
+      <div class="field"><label>Date</label><input type="date" name="date" value="${entry?.date || new Date().toISOString().split('T')[0]}" required></div>
+      <div class="field"><label>Business Purpose</label><input name="purpose" value="${entry?.purpose || ''}" required placeholder="e.g., Client meeting, site visit"></div>
+      <div class="row"><div class="field"><label>Odometer Start</label><input type="number" step="0.1" name="odometer_start" value="${entry?.odometer_start || ''}" placeholder="Optional"></div><div class="field"><label>Odometer End</label><input type="number" step="0.1" name="odometer_end" value="${entry?.odometer_end || ''}" placeholder="Optional"></div></div>
+      <div class="row"><div class="field"><label>Miles</label><input type="number" step="0.1" name="miles" value="${entry?.miles || ''}" placeholder="Or calc from odometer"></div><div class="field"><label>Round Trip</label><input type="checkbox" name="round_trip" ${entry?.round_trip ? 'checked' : ''}><span style="font-size:11px;color:#64748b;margin-left:8px">Double miles</span></div></div>
+      <div class="field"><label>Client</label><select name="client_id"><option value="">None</option>${state.clients.map(c => `<option value="${c.id}" ${entry?.client_id == c.id ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div>
+      <div style="background:#f0fdf4;padding:12px;border-radius:8px;margin-bottom:16px"><strong>2026 IRS Rate:</strong> $0.725/mile</div>
+      <div class="modal-actions"><button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button><button type="submit" class="btn btn-primary">Save</button></div>
+    </form>
+  `);
+}
+function editMileage(id) { openMileageModal(state.mileage.find(m => m.id === id)); }
+function saveMileage(e) {
+  e.preventDefault(); const f = e.target;
+  const odomStart = f.odometer_start.value ? parseFloat(f.odometer_start.value) : null;
+  const odomEnd = f.odometer_end.value ? parseFloat(f.odometer_end.value) : null;
+  let miles = f.miles.value ? parseFloat(f.miles.value) : (odomEnd && odomStart ? odomEnd - odomStart : 0);
+  if (f.round_trip.checked && !state.editing) miles = miles * 2;
+  const data = { date: f.date.value, purpose: f.purpose.value, client_id: f.client_id.value ? parseInt(f.client_id.value) : null, odometer_start: odomStart, odometer_end: odomEnd, miles, rate: 0.725, round_trip: f.round_trip.checked };
+  if (state.editing) { Object.assign(state.editing, data); }
+  else { data.id = Date.now(); state.mileage.unshift(data); }
+  saveData(); closeModal(); render(); toast('Mileage saved');
+}
+function deleteMileage(id) { if (confirm('Delete?')) { state.mileage = state.mileage.filter(m => m.id !== id); saveData(); render(); toast('Deleted'); } }
+
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); }
+
+init();
+</script>
+</body>
+</html>

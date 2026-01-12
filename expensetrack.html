@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ExpenseTrack - Expense Reimbursement Management</title>
+  <meta name="theme-color" content="#10b981">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    :root{--bg:#f8fafc;--card:#fff;--border:#e2e8f0;--text:#0f172a;--muted:#64748b;--accent:#10b981;--accent-hover:#059669;--warning:#f59e0b;--danger:#ef4444}
+    body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    .header{background:var(--card);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+    .logo{font-weight:700;font-size:1.25rem;color:var(--accent)}
+    .nav{display:flex;gap:.5rem}
+    .nav-btn{padding:.5rem 1rem;border:none;background:none;font-size:.875rem;color:var(--muted);cursor:pointer;border-radius:6px;font-weight:500}
+    .nav-btn:hover,.nav-btn.active{background:rgba(16,185,129,.1);color:var(--accent)}
+    .container{max-width:1200px;margin:0 auto;padding:1.5rem}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem}
+    .stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+    .stat-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+    .stat-value{font-size:1.75rem;font-weight:700;margin-top:.25rem}
+    .stat-value.pending{color:var(--warning)}
+    .stat-value.approved{color:var(--accent)}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1rem}
+    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+    .card-title{font-size:1.125rem;font-weight:600}
+    .btn{padding:.625rem 1.25rem;border:none;border-radius:8px;font-weight:500;cursor:pointer;font-size:.875rem;display:inline-flex;align-items:center;gap:.5rem}
+    .btn-primary{background:var(--accent);color:white}
+    .btn-primary:hover{background:var(--accent-hover)}
+    .btn-secondary{background:var(--bg);border:1px solid var(--border);color:var(--text)}
+    .btn-sm{padding:.375rem .75rem;font-size:.8125rem}
+    .table{width:100%;border-collapse:collapse}
+    .table th,.table td{padding:.75rem;text-align:left;border-bottom:1px solid var(--border)}
+    .table th{font-size:.75rem;text-transform:uppercase;color:var(--muted);font-weight:600}
+    .table tr:hover{background:var(--bg)}
+    .badge{padding:.25rem .625rem;border-radius:100px;font-size:.75rem;font-weight:500}
+    .badge-pending{background:#fef3c7;color:#92400e}
+    .badge-approved{background:#d1fae5;color:#065f46}
+    .badge-rejected{background:#fee2e2;color:#991b1b}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem}
+    .modal{background:white;border-radius:12px;width:100%;max-width:500px;max-height:90vh;overflow:auto}
+    .modal-header{padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .modal-title{font-weight:600}
+    .modal-close{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted)}
+    .modal-body{padding:1.5rem}
+    .form-group{margin-bottom:1rem}
+    .form-label{display:block;font-size:.875rem;font-weight:500;margin-bottom:.375rem}
+    .form-input,.form-select{width:100%;padding:.625rem;border:1px solid var(--border);border-radius:8px;font-size:.875rem}
+    .form-input:focus,.form-select:focus{outline:none;border-color:var(--accent)}
+    .hidden{display:none}
+    .empty{text-align:center;padding:3rem;color:var(--muted)}
+    @media(max-width:768px){.stats{grid-template-columns:1fr 1fr}.table{font-size:.8125rem}.nav{gap:.25rem}.nav-btn{padding:.5rem}}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="logo">💰 ExpenseTrack</div>
+    <nav class="nav">
+      <button class="nav-btn active" onclick="showView('expenses')">Expenses</button>
+      <button class="nav-btn" onclick="showView('categories')">Categories</button>
+      <button class="nav-btn" onclick="showView('reports')">Reports</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value pending" id="stat-pending">$0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Approved This Month</div>
+        <div class="stat-value approved" id="stat-approved">$0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Submitted</div>
+        <div class="stat-value" id="stat-total">$0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Mileage (Miles)</div>
+        <div class="stat-value" id="stat-mileage">0</div>
+      </div>
+    </div>
+
+    <div id="view-expenses">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Expense Reports</h2>
+          <button class="btn btn-primary" onclick="openModal()">+ New Expense</button>
+        </div>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="expenses-table"></tbody>
+        </table>
+        <div class="empty hidden" id="empty-state">No expenses yet. Click "+ New Expense" to add one.</div>
+      </div>
+    </div>
+
+    <div id="view-categories" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Expense Categories</h2>
+          <button class="btn btn-primary" onclick="openCategoryModal()">+ Add Category</button>
+        </div>
+        <table class="table">
+          <thead><tr><th>Category</th><th>Budget</th><th>Spent</th><th>Actions</th></tr></thead>
+          <tbody id="categories-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="view-reports" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Monthly Summary</h2>
+          <button class="btn btn-secondary" onclick="exportCSV()">📥 Export CSV</button>
+        </div>
+        <div id="report-content"></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="modal-overlay hidden" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-title">New Expense</h3>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="expense-id">
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" class="form-input" id="expense-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" class="form-input" id="expense-desc" placeholder="Lunch with client">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="expense-category"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount ($)</label>
+          <input type="number" class="form-input" id="expense-amount" step="0.01" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mileage (optional)</label>
+          <input type="number" class="form-input" id="expense-mileage" placeholder="0">
+        </div>
+        <button class="btn btn-primary" onclick="saveExpense()" style="width:100%">Save Expense</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay hidden" id="category-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Category</h3>
+        <button class="modal-close" onclick="closeCategoryModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Category Name</label>
+          <input type="text" class="form-input" id="cat-name" placeholder="Travel">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Monthly Budget ($)</label>
+          <input type="number" class="form-input" id="cat-budget" placeholder="500">
+        </div>
+        <button class="btn btn-primary" onclick="saveCategory()" style="width:100%">Save Category</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const save = (k,v) => localStorage.setItem('et_'+k, JSON.stringify(v));
+    const load = (k,d) => { try { return JSON.parse(localStorage.getItem('et_'+k)) || d; } catch { return d; } };
+    const fmt = n => '$' + Number(n).toFixed(2);
+    const genId = () => Date.now().toString(36);
+
+    let expenses = load('expenses', [
+      {id:'1',date:'2026-01-08',desc:'Office supplies',category:'Supplies',amount:45.99,mileage:0,status:'approved'},
+      {id:'2',date:'2026-01-09',desc:'Client lunch meeting',category:'Meals',amount:78.50,mileage:0,status:'pending'},
+      {id:'3',date:'2026-01-10',desc:'Site visit to Springfield',category:'Travel',amount:0,mileage:48,status:'pending'},
+      {id:'4',date:'2026-01-06',desc:'Software subscription',category:'Software',amount:29.99,mileage:0,status:'approved'},
+    ]);
+
+    let categories = load('categories', [
+      {id:'1',name:'Meals',budget:200},
+      {id:'2',name:'Travel',budget:500},
+      {id:'3',name:'Supplies',budget:150},
+      {id:'4',name:'Software',budget:100},
+    ]);
+
+    function showView(view) {
+      document.querySelectorAll('[id^="view-"]').forEach(v => v.classList.add('hidden'));
+      document.getElementById('view-' + view).classList.remove('hidden');
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      if (view === 'reports') renderReport();
+    }
+
+    function updateStats() {
+      const pending = expenses.filter(e => e.status === 'pending').reduce((s,e) => s + (e.amount || e.mileage * 0.67), 0);
+      const approved = expenses.filter(e => e.status === 'approved').reduce((s,e) => s + (e.amount || e.mileage * 0.67), 0);
+      const total = expenses.reduce((s,e) => s + (e.amount || e.mileage * 0.67), 0);
+      const mileage = expenses.reduce((s,e) => s + (e.mileage || 0), 0);
+      document.getElementById('stat-pending').textContent = fmt(pending);
+      document.getElementById('stat-approved').textContent = fmt(approved);
+      document.getElementById('stat-total').textContent = fmt(total);
+      document.getElementById('stat-mileage').textContent = mileage;
+    }
+
+    function renderExpenses() {
+      const tbody = document.getElementById('expenses-table');
+      const empty = document.getElementById('empty-state');
+      if (expenses.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      tbody.innerHTML = expenses.sort((a,b) => b.date.localeCompare(a.date)).map(e => `
+        <tr>
+          <td>${e.date}</td>
+          <td>${e.desc}</td>
+          <td>${e.category}</td>
+          <td>${e.mileage ? e.mileage + ' mi' : fmt(e.amount)}</td>
+          <td><span class="badge badge-${e.status}">${e.status}</span></td>
+          <td>
+            ${e.status === 'pending' ? `
+              <button class="btn btn-sm btn-secondary" onclick="approve('${e.id}')">✓ Approve</button>
+              <button class="btn btn-sm btn-secondary" onclick="reject('${e.id}')">✗</button>
+            ` : ''}
+            <button class="btn btn-sm btn-secondary" onclick="deleteExpense('${e.id}')">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+      updateStats();
+    }
+
+    function renderCategories() {
+      const tbody = document.getElementById('categories-table');
+      tbody.innerHTML = categories.map(c => {
+        const spent = expenses.filter(e => e.category === c.name && e.status === 'approved').reduce((s,e) => s + e.amount, 0);
+        return `
+          <tr>
+            <td>${c.name}</td>
+            <td>${fmt(c.budget)}</td>
+            <td style="color:${spent > c.budget ? 'var(--danger)' : 'inherit'}">${fmt(spent)}</td>
+            <td><button class="btn btn-sm btn-secondary" onclick="deleteCategory('${c.id}')">🗑️</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderReport() {
+      const byCategory = {};
+      expenses.forEach(e => {
+        if (!byCategory[e.category]) byCategory[e.category] = {pending:0,approved:0};
+        const amt = e.amount || e.mileage * 0.67;
+        byCategory[e.category][e.status] += amt;
+      });
+      document.getElementById('report-content').innerHTML = `
+        <table class="table">
+          <thead><tr><th>Category</th><th>Pending</th><th>Approved</th><th>Total</th></tr></thead>
+          <tbody>
+            ${Object.entries(byCategory).map(([cat,vals]) => `
+              <tr>
+                <td>${cat}</td>
+                <td>${fmt(vals.pending || 0)}</td>
+                <td>${fmt(vals.approved || 0)}</td>
+                <td><strong>${fmt((vals.pending||0) + (vals.approved||0))}</strong></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function populateCategorySelect() {
+      document.getElementById('expense-category').innerHTML = categories.map(c => 
+        `<option value="${c.name}">${c.name}</option>`
+      ).join('');
+    }
+
+    function openModal() {
+      document.getElementById('modal').classList.remove('hidden');
+      document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('expense-id').value = '';
+      document.getElementById('expense-desc').value = '';
+      document.getElementById('expense-amount').value = '';
+      document.getElementById('expense-mileage').value = '';
+      populateCategorySelect();
+    }
+
+    function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
+    function saveExpense() {
+      const expense = {
+        id: document.getElementById('expense-id').value || genId(),
+        date: document.getElementById('expense-date').value,
+        desc: document.getElementById('expense-desc').value,
+        category: document.getElementById('expense-category').value,
+        amount: parseFloat(document.getElementById('expense-amount').value) || 0,
+        mileage: parseInt(document.getElementById('expense-mileage').value) || 0,
+        status: 'pending'
+      };
+      if (!expense.desc) { alert('Please enter a description'); return; }
+      if (!expense.amount && !expense.mileage) { alert('Please enter amount or mileage'); return; }
+      const idx = expenses.findIndex(e => e.id === expense.id);
+      if (idx >= 0) expenses[idx] = expense;
+      else expenses.push(expense);
+      save('expenses', expenses);
+      closeModal();
+      renderExpenses();
+    }
+
+    function approve(id) { 
+      const e = expenses.find(x => x.id === id); 
+      if (e) { e.status = 'approved'; save('expenses', expenses); renderExpenses(); }
+    }
+
+    function reject(id) { 
+      const e = expenses.find(x => x.id === id); 
+      if (e) { e.status = 'rejected'; save('expenses', expenses); renderExpenses(); }
+    }
+
+    function deleteExpense(id) {
+      if (confirm('Delete this expense?')) {
+        expenses = expenses.filter(e => e.id !== id);
+        save('expenses', expenses);
+        renderExpenses();
+      }
+    }
+
+    function openCategoryModal() { document.getElementById('category-modal').classList.remove('hidden'); }
+    function closeCategoryModal() { document.getElementById('category-modal').classList.add('hidden'); }
+
+    function saveCategory() {
+      const name = document.getElementById('cat-name').value;
+      const budget = parseFloat(document.getElementById('cat-budget').value) || 0;
+      if (!name) { alert('Enter category name'); return; }
+      categories.push({id:genId(),name,budget});
+      save('categories', categories);
+      closeCategoryModal();
+      renderCategories();
+      document.getElementById('cat-name').value = '';
+      document.getElementById('cat-budget').value = '';
+    }
+
+    function deleteCategory(id) {
+      if (confirm('Delete this category?')) {
+        categories = categories.filter(c => c.id !== id);
+        save('categories', categories);
+        renderCategories();
+      }
+    }
+
+    function exportCSV() {
+      const rows = [['Date','Description','Category','Amount','Mileage','Status']];
+      expenses.forEach(e => rows.push([e.date,e.desc,e.category,e.amount,e.mileage,e.status]));
+      const csv = rows.map(r => r.join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'expenses.csv';
+      a.click();
+    }
+
+    renderExpenses();
+    renderCategories();
+  </script>
+</body>
+</html>
