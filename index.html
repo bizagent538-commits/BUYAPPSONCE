@@ -122,10 +122,11 @@
     /* Who Is This For */
     .target-audience{padding:60px 0;background:var(--card)}
     .audience-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:20px}
-    .audience-card{background:var(--bg);border-radius:12px;padding:24px;text-align:center;border:2px solid transparent;transition:all .2s}
-    .audience-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+    .audience-card{background:var(--bg);border-radius:12px;padding:24px;text-align:center;border:2px solid transparent;transition:all .2s;text-decoration:none;color:inherit;cursor:pointer}
+    .audience-card:hover{border-color:var(--primary);transform:translateY(-4px);box-shadow:0 8px 20px rgba(59,130,246,.15)}
+    .audience-card.active{border-color:var(--primary);background:rgba(59,130,246,.1)}
     .audience-card .icon{font-size:40px;margin-bottom:12px}
-    .audience-card h4{font-size:15px;margin-bottom:4px}
+    .audience-card h4{font-size:15px;margin-bottom:4px;color:var(--text)}
     .audience-card p{font-size:12px;color:var(--muted)}
     
     /* Category Filter */
@@ -383,13 +384,14 @@
         <p>Businesses tired of paying monthly software fees</p>
       </div>
       <div class="audience-grid">
-        <div class="audience-card"><div class="icon">🏢</div><h4>Small Business</h4><p>1-50 employees</p></div>
-        <div class="audience-card"><div class="icon">🏠</div><h4>HOAs</h4><p>Property management</p></div>
-        <div class="audience-card"><div class="icon">⛳</div><h4>Clubs</h4><p>Sports & social</p></div>
-        <div class="audience-card"><div class="icon">🏛️</div><h4>Nonprofits</h4><p>Every dollar counts</p></div>
-        <div class="audience-card"><div class="icon">⛪</div><h4>Churches</h4><p>Volunteer-driven</p></div>
-        <div class="audience-card"><div class="icon">🏗️</div><h4>Contractors</h4><p>Field service</p></div>
+        <a href="#apps" class="audience-card" data-audience="business" onclick="filterByAudience('business')"><div class="icon">🏢</div><h4>Small Business</h4><p>1-50 employees</p></a>
+        <a href="#apps" class="audience-card" data-audience="hoa" onclick="filterByAudience('hoa')"><div class="icon">🏠</div><h4>HOAs</h4><p>Property management</p></a>
+        <a href="#apps" class="audience-card" data-audience="club" onclick="filterByAudience('club')"><div class="icon">⛳</div><h4>Clubs</h4><p>Sports & social</p></a>
+        <a href="#apps" class="audience-card" data-audience="nonprofit" onclick="filterByAudience('nonprofit')"><div class="icon">🏛️</div><h4>Nonprofits</h4><p>Every dollar counts</p></a>
+        <a href="#apps" class="audience-card" data-audience="church" onclick="filterByAudience('church')"><div class="icon">⛪</div><h4>Churches</h4><p>Volunteer-driven</p></a>
+        <a href="#apps" class="audience-card" data-audience="contractor" onclick="filterByAudience('contractor')"><div class="icon">🏗️</div><h4>Contractors</h4><p>Field service</p></a>
       </div>
+      <p style="text-align:center;color:var(--muted);font-size:13px;margin-top:16px">👆 Click to see recommended apps</p>
     </div>
   </section>
 
@@ -411,69 +413,69 @@
 
       <h3 style="margin:32px 0 20px;font-size:1.25rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="background:#dcfce7;color:#16a34a;padding:4px 12px;border-radius:6px;font-size:12px">BEST VALUE</span> Starter Apps — $79</h3>
       <div class="product-grid" data-section="starter" style="margin-bottom:48px">
-        <a href="landing-clubroster.html" class="product-card featured" data-tier="starter">
+        <a href="landing-clubroster.html" class="product-card featured" data-tier="starter" data-audience="club church nonprofit hoa">
           <span class="badge-popular">Popular</span>
           <span class="tier-badge tier-simple">Starter</span>
           <div class="product-header"><div class="product-icon" style="background:#dcfce7">👥</div><div class="product-name">ClubRoster</div></div>
           <p class="product-desc">Member directory and contact management for clubs and organizations.</p>
           <div class="product-price">$79 <span>one-time</span></div>
         </a>
-        <a href="landing-dutylist.html" class="product-card" data-tier="starter">
+        <a href="landing-dutylist.html" class="product-card" data-tier="starter" data-audience="business club nonprofit">
           <span class="tier-badge tier-simple">Starter</span>
           <div class="product-header"><div class="product-icon" style="background:#fef3c7">📋</div><div class="product-name">DutyList</div></div>
           <p class="product-desc">Task management with Kanban board, list view, and calendar.</p>
           <div class="product-price">$79 <span>one-time</span></div>
         </a>
-        <a href="landing-eventpro.html" class="product-card" data-tier="starter">
+        <a href="landing-eventpro.html" class="product-card" data-tier="starter" data-audience="club church nonprofit hoa">
           <span class="tier-badge tier-simple">Starter</span>
           <div class="product-header"><div class="product-icon" style="background:#fce7f3">🎉</div><div class="product-name">EventPro</div></div>
           <p class="product-desc">Event planning with calendar, RSVPs, and venue management.</p>
           <div class="product-price">$79 <span>one-time</span></div>
         </a>
-        <a href="landing-guestpass.html" class="product-card" data-tier="starter">
+        <a href="landing-guestpass.html" class="product-card" data-tier="starter" data-audience="business club hoa">
           <span class="tier-badge tier-simple">Starter</span>
           <div class="product-header"><div class="product-icon" style="background:#e0e7ff">🎫</div><div class="product-name">GuestPass</div></div>
           <p class="product-desc">Visitor registration and check-in system.</p>
           <div class="product-price">$79 <span>one-time</span></div>
         </a>
-        <a href="landing-memberhub.html" class="product-card" data-tier="starter">
+        <a href="landing-memberhub.html" class="product-card" data-tier="starter" data-audience="club church nonprofit hoa">
           <span class="tier-badge tier-simple">Starter</span>
           <div class="product-header"><div class="product-icon" style="background:#dbeafe">👤</div><div class="product-name">MemberHub</div></div>
           <p class="product-desc">Membership management with renewals and communications.</p>
           <div class="product-price">$79 <span>one-time</span></div>
         </a>
-        <a href="landing-mileagelog.html" class="product-card" data-tier="starter">
+        <a href="landing-mileagelog.html" class="product-card" data-tier="starter" data-audience="business contractor nonprofit">
           <span class="tier-badge tier-simple">Starter</span>
           <div class="product-header"><div class="product-icon" style="background:#dcfce7">🚗</div><div class="product-name">MileageLog</div></div>
           <p class="product-desc">Simple mileage tracking for tax deductions.</p>
           <div class="product-price">$15 <span>one-time</span></div>
         </a>
-        <a href="landing-pledgetrack.html" class="product-card" data-tier="starter">
+        <a href="landing-pledgetrack.html" class="product-card" data-tier="starter" data-audience="church nonprofit">
           <span class="tier-badge tier-simple">Starter</span>
           <div class="product-header"><div class="product-icon" style="background:#fce7f3">🎁</div><div class="product-name">PledgeTrack</div></div>
           <p class="product-desc">Donation pledges and fundraising campaign tracking.</p>
           <div class="product-price">$79 <span>one-time</span></div>
         </a>
-        <a href="landing-policysign.html" class="product-card" data-tier="starter">
+        <a href="landing-policysign.html" class="product-card" data-tier="starter" data-audience="business club hoa">
           <span class="tier-badge tier-simple">Starter</span>
           <div class="product-header"><div class="product-icon" style="background:#f3e8ff">📝</div><div class="product-name">PolicySign</div></div>
           <p class="product-desc">Policy acknowledgment with e-signatures and tracking.</p>
           <div class="product-price">$79 <span>one-time</span></div>
         </a>
-        <a href="landing-vaultdocs.html" class="product-card" data-tier="starter">
+        <a href="landing-vaultdocs.html" class="product-card" data-tier="starter" data-audience="business nonprofit hoa">
           <span class="tier-badge tier-simple">Starter</span>
           <div class="product-header"><div class="product-icon" style="background:#f3e8ff">🔐</div><div class="product-name">VaultDocs</div></div>
           <p class="product-desc">Secure document storage with access controls.</p>
           <div class="product-price">$79 <span>one-time</span></div>
         </a>
-        <a href="landing-vendorvault.html" class="product-card featured" data-tier="starter">
+        <a href="landing-vendorvault.html" class="product-card featured" data-tier="starter" data-audience="business hoa contractor">
           <span class="badge-popular">New</span>
           <span class="tier-badge tier-simple">Starter</span>
           <div class="product-header"><div class="product-icon" style="background:#fef3c7">🏢</div><div class="product-name">VendorVault</div></div>
           <p class="product-desc">Vendor management with insurance & compliance tracking.</p>
           <div class="product-price">$99 <span>one-time</span></div>
         </a>
-        <a href="landing-violationtrack.html" class="product-card" data-tier="starter">
+        <a href="landing-violationtrack.html" class="product-card" data-tier="starter" data-audience="hoa">
           <span class="tier-badge tier-simple">Starter</span>
           <div class="product-header"><div class="product-icon" style="background:#fee2e2">⚠️</div><div class="product-name">ViolationTrack</div></div>
           <p class="product-desc">Violation reporting and resolution tracking for HOAs.</p>
@@ -483,80 +485,80 @@
 
       <h3 style="margin-bottom:20px;font-size:1.25rem">Standard Apps — $199 self-hosted / $349 hosted</h3>
       <div class="product-grid" data-section="standard" style="margin-bottom:48px">
-        <a href="landing-bookit.html" class="product-card featured" data-tier="standard">
+        <a href="landing-bookit.html" class="product-card featured" data-tier="standard" data-audience="business contractor">
           <span class="badge-popular">Best Seller</span>
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#dcfce7">📅</div><div class="product-name">BookIt Pro</div></div>
           <p class="product-desc">Appointment scheduling with client self-booking portal.</p>
           <div class="product-price">$199 <span>self-hosted</span> · $349/yr <span>hosted</span></div>
         </a>
-        <a href="landing-amenitybook.html" class="product-card" data-tier="standard">
+        <a href="landing-amenitybook.html" class="product-card" data-tier="standard" data-audience="hoa club">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#e0e7ff">🏊</div><div class="product-name">AmenityBook Pro</div></div>
           <p class="product-desc">Community amenity booking for HOAs, apartments, clubs.</p>
           <div class="product-price">$199 <span>self-hosted</span> · $349/yr <span>hosted</span></div>
         </a>
-        <a href="landing-assettrack.html" class="product-card" data-tier="standard">
+        <a href="landing-assettrack.html" class="product-card" data-tier="standard" data-audience="business club nonprofit">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#dbeafe">📦</div><div class="product-name">AssetTrack Pro</div></div>
           <p class="product-desc">Equipment and asset inventory with check-out system.</p>
           <div class="product-price">$199 <span>self-hosted</span> · $349/yr <span>hosted</span></div>
         </a>
-        <a href="landing-coachbooks.html" class="product-card" data-tier="standard">
+        <a href="landing-coachbooks.html" class="product-card" data-tier="standard" data-audience="business">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#fef3c7">📚</div><div class="product-name">CoachBooks Pro</div></div>
           <p class="product-desc">Coaching business management with client tracking.</p>
           <div class="product-price">$149 <span>self-hosted</span> · $149/yr <span>hosted</span></div>
         </a>
-        <a href="landing-compliancehq.html" class="product-card" data-tier="standard">
+        <a href="landing-compliancehq.html" class="product-card" data-tier="standard" data-audience="business contractor">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#fef3c7">✓</div><div class="product-name">ComplianceHQ Pro</div></div>
           <p class="product-desc">Training compliance and certification tracking.</p>
           <div class="product-price">$199 <span>self-hosted</span> · $349/yr <span>hosted</span></div>
         </a>
-        <a href="landing-crewclock-lite.html" class="product-card" data-tier="standard">
+        <a href="landing-crewclock-lite.html" class="product-card" data-tier="standard" data-audience="business contractor">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#dbeafe">⏰</div><div class="product-name">CrewClock Lite</div></div>
           <p class="product-desc">Employee scheduling + time clock. No GPS.</p>
           <div class="product-price">$199 <span>self-hosted</span> · $349/yr <span>hosted</span></div>
         </a>
-        <a href="landing-freelancebooks.html" class="product-card" data-tier="standard">
+        <a href="landing-freelancebooks.html" class="product-card" data-tier="standard" data-audience="business contractor">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#dcfce7">💼</div><div class="product-name">FreelanceBooks Pro</div></div>
           <p class="product-desc">Invoicing & expense tracking for freelancers.</p>
           <div class="product-price">$199 <span>self-hosted</span> · $349/yr <span>hosted</span></div>
         </a>
-        <a href="landing-grantdesk.html" class="product-card" data-tier="standard">
+        <a href="landing-grantdesk.html" class="product-card" data-tier="standard" data-audience="nonprofit church">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#fef3c7">💰</div><div class="product-name">GrantDesk Pro</div></div>
           <p class="product-desc">Grant tracking, deadline management, and reporting.</p>
           <div class="product-price">$149 <span>self-hosted</span> · $299/yr <span>hosted</span></div>
         </a>
-        <a href="landing-maintenancepro.html" class="product-card" data-tier="standard">
+        <a href="landing-maintenancepro.html" class="product-card" data-tier="standard" data-audience="hoa business contractor">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#fef3c7">🔧</div><div class="product-name">MaintenancePro Plus</div></div>
           <p class="product-desc">Maintenance request and work order management.</p>
           <div class="product-price">$199 <span>self-hosted</span> · $349/yr <span>hosted</span></div>
         </a>
-        <a href="landing-patronhq.html" class="product-card" data-tier="standard">
+        <a href="landing-patronhq.html" class="product-card" data-tier="standard" data-audience="nonprofit church">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#fce7f3">❤️</div><div class="product-name">PatronHQ</div></div>
           <p class="product-desc">Donor and patron management with campaign tracking.</p>
           <div class="product-price">$199 <span>self-hosted</span> · $349/yr <span>hosted</span></div>
         </a>
-        <a href="landing-supporthq.html" class="product-card" data-tier="standard">
+        <a href="landing-supporthq.html" class="product-card" data-tier="standard" data-audience="business">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#dbeafe">🎧</div><div class="product-name">SupportHQ</div></div>
           <p class="product-desc">Customer support ticket system with SLA tracking.</p>
           <div class="product-price">$199 <span>self-hosted</span> · $349/yr <span>hosted</span></div>
         </a>
-        <a href="landing-trainup.html" class="product-card" data-tier="standard">
+        <a href="landing-trainup.html" class="product-card" data-tier="standard" data-audience="business nonprofit">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#dcfce7">🎓</div><div class="product-name">TrainUp Pro</div></div>
           <p class="product-desc">Full LMS with courses, quizzes, and certificates.</p>
           <div class="product-price">$199 <span>self-hosted</span> · $499/yr <span>hosted</span></div>
         </a>
-        <a href="landing-volunteerdesk.html" class="product-card" data-tier="standard">
+        <a href="landing-volunteerdesk.html" class="product-card" data-tier="standard" data-audience="nonprofit church club">
           <span class="tier-badge tier-standard">Standard</span>
           <div class="product-header"><div class="product-icon" style="background:#dcfce7">🙋</div><div class="product-name">VolunteerDesk Pro</div></div>
           <p class="product-desc">Volunteer scheduling and hour tracking.</p>
@@ -566,25 +568,25 @@
 
       <h3 style="margin-bottom:20px;font-size:1.25rem">Professional Apps — $299 / $499 hosted</h3>
       <div class="product-grid" data-section="pro" style="margin-bottom:48px">
-        <a href="landing-crewclock-pro.html" class="product-card" data-tier="pro">
+        <a href="landing-crewclock-pro.html" class="product-card" data-tier="pro" data-audience="business contractor">
           <span class="tier-badge tier-pro">Professional</span>
           <div class="product-header"><div class="product-icon" style="background:#f3e8ff">📍</div><div class="product-name">CrewClock Pro</div></div>
           <p class="product-desc">Scheduling + time clock + GPS tracking + geofencing.</p>
           <div class="product-price">$299 <span>self-hosted</span> · $499/yr <span>hosted</span></div>
         </a>
-        <a href="landing-dispatchpro.html" class="product-card" data-tier="pro">
+        <a href="landing-dispatchpro.html" class="product-card" data-tier="pro" data-audience="contractor business">
           <span class="tier-badge tier-pro">Professional</span>
           <div class="product-header"><div class="product-icon" style="background:#f3e8ff">🚚</div><div class="product-name">DispatchPro</div></div>
           <p class="product-desc">Job dispatch and field service management.</p>
           <div class="product-price">$299 <span>self-hosted</span> · $499/yr <span>hosted</span></div>
         </a>
-        <a href="landing-expensetrack.html" class="product-card" data-tier="pro">
+        <a href="landing-expensetrack.html" class="product-card" data-tier="pro" data-audience="business nonprofit">
           <span class="tier-badge tier-pro">Professional</span>
           <div class="product-header"><div class="product-icon" style="background:#f3e8ff">🧾</div><div class="product-name">ExpenseTrack Pro</div></div>
           <p class="product-desc">Expense reporting with approvals and reimbursement.</p>
           <div class="product-price">$299 <span>self-hosted</span> · $499/yr <span>hosted</span></div>
         </a>
-        <a href="landing-rentroll.html" class="product-card" data-tier="pro">
+        <a href="landing-rentroll.html" class="product-card" data-tier="pro" data-audience="business hoa">
           <span class="tier-badge tier-pro">Professional</span>
           <div class="product-header"><div class="product-icon" style="background:#f3e8ff">🏘️</div><div class="product-name">RentRoll Pro</div></div>
           <p class="product-desc">Property and rental management with tenant portal.</p>
@@ -594,7 +596,7 @@
 
       <h3 style="margin-bottom:20px;font-size:1.25rem">Enterprise — $599+ / $999+ hosted</h3>
       <div class="product-grid" data-section="pro">
-        <a href="landing-opsdeck.html" class="product-card featured" data-tier="pro" style="border-color:var(--warning)">
+        <a href="landing-opsdeck.html" class="product-card featured" data-tier="pro" data-audience="business contractor" style="border-color:var(--warning)">
           <span class="tier-badge tier-enterprise">Enterprise</span>
           <div class="product-header"><div class="product-icon" style="background:#fef3c7">🎯</div><div class="product-name">OpsDeck</div></div>
           <p class="product-desc">Unified workforce platform: scheduling, time clock, expenses, training, assets, compliance, inventory.</p>
@@ -763,7 +765,7 @@
       });
     });
 
-    // Category Filter
+    // Category Filter by Tier
     document.querySelectorAll('.category-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const tier = btn.dataset.tier;
@@ -771,6 +773,16 @@
         // Update active button
         document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        
+        // Clear audience filter
+        document.querySelectorAll('.audience-card').forEach(c => c.classList.remove('active'));
+        
+        // Show all section headers
+        document.querySelectorAll('.product-grid').forEach(grid => {
+          grid.style.display = 'grid';
+          const header = grid.previousElementSibling;
+          if (header && header.tagName === 'H3') header.style.display = 'flex';
+        });
         
         // Filter cards
         document.querySelectorAll('.product-card').forEach(card => {
@@ -780,21 +792,41 @@
             card.style.display = 'none';
           }
         });
-        
-        // Show/hide section headers
-        document.querySelectorAll('[data-section]').forEach(section => {
-          const sectionTier = section.dataset.section;
-          const header = section.previousElementSibling;
-          if (tier === 'all' || sectionTier === tier) {
-            section.style.display = 'grid';
-            if (header && header.tagName === 'H3') header.style.display = 'flex';
-          } else {
-            section.style.display = 'none';
-            if (header && header.tagName === 'H3') header.style.display = 'none';
-          }
-        });
       });
     });
+
+    // Filter by Audience
+    function filterByAudience(audience) {
+      // Reset tier filter buttons
+      document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.category-btn[data-tier="all"]').classList.add('active');
+      
+      // Highlight selected audience card
+      document.querySelectorAll('.audience-card').forEach(c => c.classList.remove('active'));
+      document.querySelector(`.audience-card[data-audience="${audience}"]`).classList.add('active');
+      
+      // Show all section headers first
+      document.querySelectorAll('.product-grid').forEach(grid => {
+        grid.style.display = 'grid';
+        const header = grid.previousElementSibling;
+        if (header && header.tagName === 'H3') header.style.display = 'flex';
+      });
+      
+      // Filter cards by audience
+      document.querySelectorAll('.product-card').forEach(card => {
+        const audiences = card.dataset.audience || '';
+        if (audiences.includes(audience)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+      
+      // Scroll to apps section
+      setTimeout(() => {
+        document.getElementById('apps').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
   </script>
 </body>
 </html>
