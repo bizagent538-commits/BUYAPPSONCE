@@ -260,21 +260,22 @@
   </header>
 
   <!-- Hero Section -->
-  <section class="hero">
+  <section class="hero" style="padding:40px 0 50px">
     <div class="container">
       <div class="hero-grid">
         <div class="hero-content">
           <div class="hero-badge">✓ Trusted by 500+ businesses</div>
-          <h1>Stop Renting Software.<br><em>Own It Forever.</em></h1>
-          <p>Professional business apps with one-time pricing. No monthly fees, no per-user charges, no surprises. Self-host or let us host.</p>
-          <div class="hero-buttons">
+          <h1 style="font-size:2.5rem">Stop Renting Software.<br><em>Own It Forever.</em></h1>
+          <p style="font-size:1.1rem;margin-bottom:20px">Professional business apps with one-time pricing. No monthly fees, no per-user charges.</p>
+          <div class="hero-buttons" style="margin-bottom:24px">
             <a href="#apps" class="btn btn-primary">Browse All 29 Apps →</a>
-            <a href="bundles.html" class="btn btn-secondary">View Bundles & Save</a>
+            <a href="bundles.html" class="btn btn-secondary">View Bundles</a>
           </div>
-          <div class="hero-trust">
-            <div class="hero-trust-item"><span class="checkmark">✓</span> 30-day money-back guarantee</div>
-            <div class="hero-trust-item"><span class="checkmark">✓</span> Free demos, no credit card</div>
-            <div class="hero-trust-item"><span class="checkmark">✓</span> Instant download</div>
+          <!-- Social Proof Stats inline -->
+          <div style="display:flex;gap:32px;flex-wrap:wrap">
+            <div><strong style="color:var(--primary);font-size:1.5rem">$2.4M+</strong><br><span style="font-size:12px;color:var(--muted)">Saved vs. SaaS</span></div>
+            <div><strong style="color:var(--primary);font-size:1.5rem">4.9★</strong><br><span style="font-size:12px;color:var(--muted)">Avg Rating</span></div>
+            <div><strong style="color:var(--primary);font-size:1.5rem">30-Day</strong><br><span style="font-size:12px;color:var(--muted)">Money Back</span></div>
           </div>
         </div>
         <div class="hero-visual">
@@ -298,25 +299,10 @@
     </div>
   </section>
 
-  <!-- Social Proof Bar -->
-  <div class="social-proof">
+  <!-- Who Is This For -->
+  <section class="target-audience" style="padding:30px 0 40px">
     <div class="container">
-      <div class="social-proof-inner">
-        <div class="social-proof-stat"><strong>500+</strong><span>Happy Customers</span></div>
-        <div class="social-proof-stat"><strong>$2.4M+</strong><span>Saved vs. Subscriptions</span></div>
-        <div class="social-proof-stat"><strong>29</strong><span>Apps Available</span></div>
-        <div class="social-proof-stat"><strong>4.9★</strong><span>Average Rating</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Who Is This For - MOVED UP -->
-  <section class="target-audience" style="padding:40px 0">
-    <div class="container">
-      <div class="section-header" style="margin-bottom:24px">
-        <h2 style="font-size:1.5rem">What type of organization are you?</h2>
-        <p>Click to see apps recommended for you</p>
-      </div>
+      <p style="text-align:center;font-weight:600;margin-bottom:20px;font-size:1.1rem">I'm looking for apps for my...</p>
       <div class="audience-grid">
         <a href="#apps" class="audience-card" data-audience="business" onclick="filterByAudience('business')"><div class="icon">🏢</div><h4>Small Business</h4><p>1-50 employees</p></a>
         <a href="#apps" class="audience-card" data-audience="hoa" onclick="filterByAudience('hoa')"><div class="icon">🏠</div><h4>HOAs</h4><p>Property management</p></a>
